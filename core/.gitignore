@@ -14,7 +14,8 @@
 *.ipr
 *.iws
 .idea/
-../.idea/
+.android/
+.ios/
 
 # Visual Studio Code related
 .vscode/
