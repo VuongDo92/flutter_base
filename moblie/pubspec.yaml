@@ -14,7 +14,7 @@ description: A new Flutter application.
 version: 1.0.0+1
 
 environment:
-  sdk: ">=2.1.0 <3.0.0"
+  sdk: ">=2.3.0-dev <3.0.0"
 
 dependencies:
   core:
@@ -29,8 +29,8 @@ dependencies:
   kiwi: ^0.1.0
   provider: ^2.0.0+1
   #State managementsy
-  mobx: ^0.3.8+1
-  flutter_mobx: ^0.3.3+1
+  mobx: ^0.3.5
+  flutter_mobx: ^0.3.0+1
   #routing
   fluro: ^1.4.0
   #UI libraries
@@ -48,7 +48,7 @@ dependencies:
   shared_preferences: ^0.5.1+2
   #Utils
   path_provider: any
-  intl: 0.16.0
+  intl: any
   sprintf: ^4.0.0
   platform: ^2.2.0
   #http + ws
