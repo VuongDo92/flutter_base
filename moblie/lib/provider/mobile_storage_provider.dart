@@ -1,59 +1,80 @@
 
 import 'package:core/repositories/providers/local_storage_provider.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class MobileStorageProvider implements LocalStorageProvider {
+
+  static String _localPath = null;
+
+  Future<String> get localPath async {
+    if (_localPath != null) {
+      return Future.value(_localPath);
+    }
+    final directory = await getApplicationDocumentsDirectory();
+    _localPath = directory.path;
+    return directory.path;
+  }
+
+
   @override
-  Future<bool> getBool(String key) {
-    // TODO: implement getBool
-    return null;
+  Future<bool> getBool(String key) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.getBool(key);
   }
 
   @override
-  Future<double> getDouble(String key) {
-    // TODO: implement getDouble
-    return null;
+  Future<double> getDouble(String key) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.getDouble(key);
   }
 
   @override
-  Future<int> getInt(String key) {
-    // TODO: implement getInt
-    return null;
+  Future<int> getInt(String key) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.getInt(key);
   }
 
   @override
-  Future<String> getString(String key) {
-    // TODO: implement getString
-    return null;
+  Future<String> getString(String key) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.getString(key);
   }
 
   @override
-  Future<bool> remove(String key) {
-    // TODO: implement remove
-    return null;
+  Future<bool> remove(String key) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.remove(key);
   }
 
   @override
-  Future<bool> setBool(String key, bool value) {
-    // TODO: implement setBool
-    return null;
+  Future<bool> setBool(String key, bool value) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.setBool(key, value);
   }
 
   @override
-  Future<bool> setDouble(String key, double value) {
-    // TODO: implement setDouble
-    return null;
+  Future<bool> setDouble(String key, double value) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.setDouble(key, value);
   }
 
   @override
-  Future<bool> setInt(String key, int value) {
-    // TODO: implement setInt
-    return null;
+  Future<bool> setInt(String key, int value) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.setInt(key, value);
   }
 
   @override
-  Future<bool> setString(String key, String value) {
-    // TODO: implement setString
-    return null;
+  Future<bool> setString(String key, String value) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.setString(key, value);
+  }
+
+  @override
+  Future<bool> contains(String key) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.containsKey(key);
   }
 
 }

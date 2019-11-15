@@ -44,7 +44,8 @@ dependencies:
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^0.1.2
   #Storage
-  flutter_secure_storage: ^3.2.1+1
+  flutter_secure_storage:
+    path: ../../flutter_secure_storage
   shared_preferences: ^0.5.1+2
   #Utils
   path_provider: any

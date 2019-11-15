@@ -210,9 +210,9 @@ packages:
   flutter_secure_storage:
     dependency: "direct main"
     description:
-      name: flutter_secure_storage
-      url: "https://pub.dartlang.org"
-    source: hosted
+      path: "../../flutter_secure_storage"
+      relative: true
+    source: path
     version: "3.2.1+1"
   flutter_test:
     dependency: "direct dev"
