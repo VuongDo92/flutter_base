@@ -8,10 +8,10 @@ class SecureStorageProvider extends SecretProvider {
   static String get sessionKey => Platform.isIOS ? "session" : "app_session";
   static final iOSOptions _iOSOptions = iOSOptions(groupId: null);
   @override
-  Future<String> getToken() => getString(sessionKey);
+  Future<String> getSessionToken() => getString(sessionKey);
 
   @override
-  Future saveToken(String token) => setString(sessionKey, token);
+  Future saveSessionToken(String token) => setString(sessionKey, token);
 
   @override
   Future<bool> setString(String key, String value) {

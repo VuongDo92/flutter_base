@@ -1,4 +1,3 @@
-
 import 'dart:convert';
 import 'dart:io';
 
@@ -34,7 +33,6 @@ class ApiCancelable<T> implements CancelableFuture<T> {
 }
 
 class DioApiProvider implements ApiProvider {
-
   @override
   String deviceId;
 
@@ -98,7 +96,8 @@ class DioApiProvider implements ApiProvider {
   }
 
   @override
-  Future<AuthenticationResult> authenticate(String token, IdentityProvider provider, String referralLink) {
+  Future<AuthenticationResult> authenticate(
+      String token, IdentityProvider provider, String referralLink) {
     // TODO: implement authenticate
     return null;
   }
@@ -111,81 +110,82 @@ class DioApiProvider implements ApiProvider {
 
   @override
   registerApp(app) {
-    // TODO: implement registerApp
-    return null;
+    return this.app = app;
   }
 
   @override
-  Future registerDevice({String pushToken, String deviceId, int applicationBadge = null}) {
+  Future registerDevice(
+      {String pushToken, String deviceId, int applicationBadge = null}) {
     // TODO: implement registerDevice
     return null;
   }
+}
 
-  DataProviderException transformException(dynamic exception) {
-    if (exception is DataProviderException) {
-      return exception;
+DataProviderException transformException(dynamic exception) {
+  if (exception is DataProviderException) {
+    return exception;
+  }
+  if (exception is DioError) {
+    if (exception.type == DioErrorType.CANCEL) {
+      return CancelException();
     }
-    if (exception is DioError) {
-      if (exception.type == DioErrorType.CANCEL) {
-        return CancelException();
-      }
-    }
-    print('API exception: ' + exception.toString());
-    final defaultErrorMessage = 'Oops! Something went wrong!';
-    if (exception is DioError) {
-      switch (exception.type) {
-        case DioErrorType.CONNECT_TIMEOUT:
-        case DioErrorType.RECEIVE_TIMEOUT:
-        case DioErrorType.SEND_TIMEOUT:
-          return TimeOutException();
-        case DioErrorType.DEFAULT:
-          final error = exception.error;
-          if (error != null) {
-            if (error is SocketException) {
-              return ConnectionException();
-            }
+  }
+  print('API exception: ' + exception.toString());
+  final defaultErrorMessage = 'Oops! Something went wrong!';
+  if (exception is DioError) {
+    switch (exception.type) {
+      case DioErrorType.CONNECT_TIMEOUT:
+      case DioErrorType.RECEIVE_TIMEOUT:
+      case DioErrorType.SEND_TIMEOUT:
+        return TimeOutException();
+      case DioErrorType.DEFAULT:
+        final error = exception.error;
+        if (error != null) {
+          if (error is SocketException) {
+            return ConnectionException();
           }
-          break;
-        default:
-      }
-      if (exception.type == DioErrorType.RESPONSE) {
-        final Map<String, dynamic> data =
-        exception.response?.data is Map<String, dynamic>
-            ? exception.response.data
-            : {};
-        final title = data['title'] ?? data['errorTitle'];
-        final message = data['message'] ??
-            data['errorMessage'] ??
-            data['msg'] ??
-            (title == null ? defaultErrorMessage : null);
-        switch (exception.response?.statusCode) {
-          case 400:
-            return RejectedException(
-              title: title,
-              message: message,
-              originalException: exception,
-            );
-          case 401:
-            return UnauthorizedException(
-              originalException: exception,
-            );
-          case 403:
-            return ForbiddenException(message: "You do not have access");
-          case 404:
-            return NotfoundException(
-              title: title,
-              message: message,
-              originalException: exception,
-            );
-          case 410:
-            return DeprecationException(
-              originalException: exception,
-            );
-          default:
-            break;
         }
+        break;
+      default:
+    }
+    if (exception.type == DioErrorType.RESPONSE) {
+      final Map<String, dynamic> data =
+          exception.response?.data is Map<String, dynamic>
+              ? exception.response.data
+              : {};
+      final title = data['title'] ?? data['errorTitle'];
+      final message = data['message'] ??
+          data['errorMessage'] ??
+          data['msg'] ??
+          (title == null ? defaultErrorMessage : null);
+      switch (exception.response?.statusCode) {
+        case 400:
+          return RejectedException(
+            title: title,
+            message: message,
+            originalException: exception,
+          );
+        case 401:
+          return UnauthorizedException(
+            originalException: exception,
+          );
+        case 403:
+          return ForbiddenException(message: "You do not have access");
+        case 404:
+          return NotfoundException(
+            title: title,
+            message: message,
+            originalException: exception,
+          );
+        case 410:
+          return DeprecationException(
+            originalException: exception,
+          );
+        default:
+          break;
       }
     }
+  }
 //    todo: defile a deserializationError in the SeriallizationModel
 //    if (exception is DeserializationError) {
 //      return UnknownException(
@@ -194,13 +194,11 @@ class DioApiProvider implements ApiProvider {
 //        originalException: exception,
 //      );
 //    }
-    return UnknownException(
-      message: defaultErrorMessage,
-      originalException: exception,
-    );
-  }
+  return UnknownException(
+    message: defaultErrorMessage,
+    originalException: exception,
+  );
 }
-
 
 parseJson(String text) {
   /// There seems to be an issue with compute in debug mode and enabling debuggers,

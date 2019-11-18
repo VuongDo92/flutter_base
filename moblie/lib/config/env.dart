@@ -3,9 +3,11 @@ import 'dart:isolate';
 
 import 'package:bittrex_app/app.dart';
 import 'package:bittrex_app/provider/dio_api_provider.dart';
+import 'package:bittrex_app/provider/dio_remote_api_provider.dart';
 import 'package:bittrex_app/provider/mobile_provider.dart';
 
 import 'package:core/repositories/providers/providers.dart';
+import 'package:core/repositories/authenticate_repository.dart';
 import 'package:flutter/widgets.dart';
 import 'package:kiwi/kiwi.dart' as kiwi;
 
@@ -18,6 +20,13 @@ enum EnvType {
 
 abstract class Env {
   EnvType environmentType = EnvType.DEVELOPMENT;
+
+  /// pref to dio_remote_api_provider
+  String apiBaseUrlConfig = 'https://wwwstage.globe.com.ph/';
+
+  ApiProvider apiProvider;
+
+  RemoteApiProvider remoteApiProvider;
 
   String appName = 'Rovo';
   String baseUrl;
@@ -49,42 +58,38 @@ abstract class Env {
     _registerProviders();
     _registerRepositories();
 
-    final all = await Future.wait([
-      container.resolve<RemoteConfigProvider>().init(),
-      container.resolve<LocalStorageProvider>().getString('locale'),
-    ]);
+    final locale = container.resolve<LocalStorageProvider>().getString('locale');
 
-//    container.resolve<PushProvider>().init();
+    String localeString =  locale as String ?? 'en';
 
-    String localeString =  all.last as String ?? 'en';
-
-//    AccountStore accountStore = AccountStore(
-//      accountRepository: container.resolve<AccountRepository>(),
-//    );
-
-    // Example of analytics
-//    AmplitudeAnalytics amplitude = AmplitudeAnalytics(amplitudeApiKey);
-//    Analytics.register(amplitude);
     // Set up error hooks and run app
     final app = App(
-//      accountStore: accountStore,
       env: this,
       locale: localeString != null ? Locale(localeString) : null,
     );
+
+    if(remoteApiProvider is DioRemoteApiProvider) {
+      remoteApiProvider.registerApp(app);
+    }
+    if(apiProvider is DioApiProvider) {
+      apiProvider.registerApp(app);
+    }
 
     bool isInDebugMode = false;
     assert(() {
       isInDebugMode = true;
       return true;
     }());
-//    Crashlytics.instance.enableInDevMode = true;
-//    FlutterError.onError = (FlutterErrorDetails details) async {
-//      if (isInDebugMode) {
-//        // In development mode simply print to console.
-//        FlutterError.dumpErrorToConsole(details);
-//      }
-//      Crashlytics.instance.onError(details);
-//    };
+    // todo first init & config Crashlytics
+    FlutterError.onError = (FlutterErrorDetails details) async {
+      if (isInDebugMode) {
+        // In development mode simply print to console.
+        FlutterError.dumpErrorToConsole(details);
+      }
+      if (details.stack != null) {
+        debugPrint(details.toString());
+      }
+    };
     Isolate.current.addErrorListener(new RawReceivePort((dynamic pair) async {
       final isolateError = pair as List<dynamic>;
       await app.onError(
@@ -93,6 +98,10 @@ abstract class Env {
       );
     }).sendPort);
 
+    /// Disabling red screen of death in release mode
+    if (!isInDebugMode) {
+      ErrorWidget.builder = (FlutterErrorDetails details) => Container();
+    }
     // Run app
     return runZoned(() async {
       runApp(app);
@@ -102,6 +111,9 @@ abstract class Env {
   }
 
   void _registerProviders() async {
+
+    container.registerSingleton<RemoteApiProvider, DioRemoteApiProvider>(
+            (c) => DioRemoteApiProvider(apiBaseUrlConfig));
 
     container.registerSingleton<ApiProvider, DioApiProvider>(
         (c) => DioApiProvider(apiBaseUrl + '/' + apiVersion));
@@ -117,11 +129,14 @@ abstract class Env {
   }
 
   void _registerRepositories() {
+    final apiRemoteProvider = container.resolve<RemoteApiProvider>();
     final apiProvider = container.resolve<ApiProvider>();
     final secretProvider = container.resolve<SecretProvider>();
     final localStorageProvider = container.resolve<LocalStorageProvider>();
-    final remoteConfigProvider = container.resolve<RemoteConfigProvider>();
 
+    final AuthenticateRepository authenticateRepo = AuthenticateRepository(apiRemoteProvider, apiProvider, secretProvider, localStorageProvider);
+
+    container.registerSingleton((c) => authenticateRepo);
   }
 }
 

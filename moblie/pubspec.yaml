@@ -47,6 +47,9 @@ dependencies:
   flutter_secure_storage:
     path: ../../flutter_secure_storage
   shared_preferences: ^0.5.1+2
+  #AppAuth
+  flutter_appauth:
+    path: ../../flutter_appauth
   #Utils
   path_provider: any
   intl: any

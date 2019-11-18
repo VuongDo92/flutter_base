@@ -30,6 +30,14 @@ class AuthenticationResult {
   AuthenticationResult({this.sessionToken, this.isSignup});
 }
 
+abstract class RemoteApiProvider {
+
+  @required
+  registerApp(dynamic app);
+
+  Future<dynamic> fetchConfig();
+}
+
 abstract class ApiProvider {
   String sessionToken;
   String deviceId;
