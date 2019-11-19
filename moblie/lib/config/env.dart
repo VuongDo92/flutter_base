@@ -5,6 +5,7 @@ import 'package:bittrex_app/app.dart';
 import 'package:bittrex_app/provider/dio_api_provider.dart';
 import 'package:bittrex_app/provider/dio_remote_api_provider.dart';
 import 'package:bittrex_app/provider/mobile_provider.dart';
+import 'package:core/stores/akamai_store.dart';
 
 import 'package:core/repositories/providers/providers.dart';
 import 'package:core/repositories/authenticate_repository.dart';
@@ -34,9 +35,6 @@ abstract class Env {
 
   // API
   String apiBaseUrl;
-  String apiVersion;
-
-  String get apiUrl => '$apiBaseUrl/$apiVersion';
 
   // Database Config
   int dbVersion = 1;
@@ -58,14 +56,21 @@ abstract class Env {
     _registerProviders();
     _registerRepositories();
 
-    final locale = container.resolve<LocalStorageProvider>().getString('locale');
+    AuthenticateRepository accountRepository = container.resolve<AuthenticateRepository>();
+    await accountRepository.init();
 
-    String localeString =  locale as String ?? 'en';
+    // todo implement localization
+//    final locale = container.resolve<LocalStorageProvider>().getString('locale');
+//
+//    String localeString =  locale as String ?? 'en';
+
+    AkamaiStore akamaiStore = AkamaiStore(authenticateRepository: accountRepository);
 
     // Set up error hooks and run app
     final app = App(
       env: this,
-      locale: localeString != null ? Locale(localeString) : null,
+      akamaiStore: akamaiStore,
+      locale: Locale('en'),
     );
 
     if(remoteApiProvider is DioRemoteApiProvider) {
@@ -116,7 +121,7 @@ abstract class Env {
             (c) => DioRemoteApiProvider(apiBaseUrlConfig));
 
     container.registerSingleton<ApiProvider, DioApiProvider>(
-        (c) => DioApiProvider(apiBaseUrl + '/' + apiVersion));
+        (c) => DioApiProvider(apiBaseUrl));
   
     container.registerSingleton<SecretProvider, SecureStorageProvider>(
         (c) => SecureStorageProvider());

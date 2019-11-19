@@ -1,8 +1,12 @@
 import 'dart:async';
 
+import 'package:core/utils/uuid.dart';
+
 import 'providers/providers.dart';
 
 class AuthenticateRepository {
+  static const String _DEVICE_ID_KEY = "deviceId";
+
   final _events = StreamController<AuthenticateEvent>.broadcast();
   Stream<AuthenticateEvent> get events => _events.stream;
 
@@ -11,26 +15,23 @@ class AuthenticateRepository {
   String _akamaiTokenEndpoint;
   String _akamaiRedirectURL;
   String _akamaiSchemeURL;
-  var _akamaiScopes;
+  String _akamaiScopes;
 
   String get akamaiClientId => _akamaiClientId;
   String get akamaiAuthorizationEndpoint => _akamaiAuthorizationEndpoint;
   String get akamaiTokenEndpoint => _akamaiTokenEndpoint;
   String get akamaiRedirectURL => _akamaiRedirectURL;
   String get akamaiSchemeURL => _akamaiSchemeURL;
-  get akamaiScopes => _akamaiScopes;
-
-  String _accessToken;
-  String _refreshToken;
-  String _idToken;
+  List<String> get akamaiScopes {
+    List<String> parts = _akamaiScopes.split(RegExp(","));
+    return parts.map((it) =>
+      it.replaceAll(RegExp('[!@#\$%^&*(),.?"[\\]:{}|<>]'), '').trim()
+    ).toList();
+  }
 
   String _sessionToken;
   dynamic _account;
   String _deviceId;
-
-  String get accessToken => _accessToken;
-  String get refreshToken => _refreshToken;
-  String get idToken => _idToken;
 
   String get sessionToken => _sessionToken;
   dynamic get account => _account;
@@ -60,7 +61,15 @@ class AuthenticateRepository {
     this._akamaiSchemeURL = akamai['schemeURL'];
   }
 
-  Future<dynamic> authenticate() {}
+  Future<dynamic> authenticateWithAkamai(
+      String _accessToken, String _idToken, String _refreshToken) async {
+    final result = await _apiProvider.authenticateWithAkamai(
+        accessToken: _accessToken,
+        idToken: _idToken,
+        refreshToken: _refreshToken,
+        deviceId: _deviceId);
+    return result;
+  }
 
   Future<void> logout() async {
     try {
@@ -76,13 +85,44 @@ class AuthenticateRepository {
     _events.add(LoggedOutEvent());
   }
 
-  Future<void> saveToken(
-      String accessToken, String refreshToken, String idToken) async {
-    _accessToken = accessToken;
-    _refreshToken = refreshToken;
-    _idToken = idToken;
+  Future<void> saveSessionToken(String sessionToken) async {
+    return _secretProvider.saveSessionToken(sessionToken);
+  }
 
-//    return _secretProvider.saveAkamaiToken(accessToken, refreshToken, idToken);
+  Future registerDevice({String deviceId, int applicationBadge}) async {
+    if (deviceId == null && _deviceId == null) {
+      final savedDeviceId =
+          await this._localStorageProvider.getString(_DEVICE_ID_KEY);
+      deviceId = savedDeviceId;
+    } else if (deviceId != null) {
+      _deviceId = deviceId;
+    }
+
+    if (_deviceId == null) {
+      _deviceId = Uuid().generateV4();
+      await _localStorageProvider.setString(_DEVICE_ID_KEY, _deviceId);
+    }
+    _apiProvider.deviceId = _deviceId;
+    try {
+      await _registerDevice(
+        applicationBadge: applicationBadge,
+      );
+    } catch (e) {
+      // ignore
+    }
+  }
+
+  Future _registerDevice({
+    int applicationBadge = null,
+  }) {
+//    if (_deviceId == null) {
+//      return null;
+//    }
+//    return _apiProvider.registerDevice(
+//      pushToken: _pushProvider.pushToken,
+//      deviceId: _deviceId,
+//      applicationBadge: applicationBadge,
+//    );
   }
 }
 

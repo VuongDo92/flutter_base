@@ -70,19 +70,19 @@ class DioApiProvider implements ApiProvider {
         }
 
         // Custom headers
-        if (deviceId != null) {
-          options.headers['x-device-id'] = deviceId;
-        }
-        if (deviceType != null) {
-          options.headers['x-device-type'] = deviceType;
-        }
-        if (appVersion != null) {
-          options.headers['x-app-version'] = appVersion;
-        }
-        if (timezone != null) {
-          options.headers['x-timezone'] = timezone;
-        }
-        options.headers['Accept-Encoding'] = 'gzip';
+//        if (deviceId != null) {
+//          options.headers['x-device-id'] = deviceId;
+//        }
+//        if (deviceType != null) {
+//          options.headers['x-device-type'] = deviceType;
+//        }
+//        if (appVersion != null) {
+//          options.headers['x-app-version'] = appVersion;
+//        }
+//        if (timezone != null) {
+//          options.headers['x-timezone'] = timezone;
+//        }
+//        options.headers['Accept-Encoding'] = 'gzip';
         return options;
       }, onError: (DioError e) {
         final exception = transformException(e);
@@ -118,6 +118,34 @@ class DioApiProvider implements ApiProvider {
       {String pushToken, String deviceId, int applicationBadge = null}) {
     // TODO: implement registerDevice
     return null;
+  }
+
+  @override
+  Future authenticateWithAkamai(
+      {String accessToken,
+      String idToken,
+      String refreshToken,
+      String deviceId}) async {
+    try {
+      final data = {
+        'accessToken': accessToken,
+        'idToken': idToken,
+        'refreshToken': refreshToken,
+        'deviceId': deviceId,
+      };
+      final response = await _dio.post('/mobile/v1/akamai/login', data: data);
+      final sessionToken = response.data['g1es_token'];
+      final rsaEmail = response.data['data'];
+      final hasPin = response.data['hasPin'];
+
+      return AuthenticationAkamaiResult(
+        sessionToken: sessionToken,
+        email: rsaEmail,
+        hasPin: hasPin,
+      );
+    } catch (e) {
+      throw transformException(e);
+    }
   }
 }
 

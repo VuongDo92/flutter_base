@@ -3,6 +3,9 @@ import './env.dart';
 class DevelopmentEnv extends Env {
   EnvType environmentType = EnvType.DEVELOPMENT;
   static DevelopmentEnv value;
+
+
+
   @override
   String appName = 'Rovo';
   @override
@@ -10,7 +13,7 @@ class DevelopmentEnv extends Env {
   @override
   String host = 'inrovo.co';
   @override
-  String apiBaseUrl = 'https://api.inrovo.co';
+  String apiBaseUrl = 'https://ocspstage.globe.com.ph';
   @override
   String apiVersion = 'v1.9.0';
   @override

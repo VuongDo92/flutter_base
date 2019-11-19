@@ -30,8 +30,16 @@ class AuthenticationResult {
   AuthenticationResult({this.sessionToken, this.isSignup});
 }
 
-abstract class RemoteApiProvider {
+class AuthenticationAkamaiResult {
+//  Account account;
+  String email;
+  String sessionToken;
+  bool hasPin;
 
+  AuthenticationAkamaiResult({this.email, this.sessionToken, this.hasPin});
+}
+
+abstract class RemoteApiProvider {
   @required
   registerApp(dynamic app);
 
@@ -57,6 +65,12 @@ abstract class ApiProvider {
   Future registerDevice({
     @required String pushToken,
     @required String deviceId,
-    int applicationBadge = null,
+    int applicationBadge,
   });
+
+  Future<dynamic> authenticateWithAkamai(
+      {@required String accessToken,
+      @required String idToken,
+      @required String refreshToken,
+      @required String deviceId});
 }

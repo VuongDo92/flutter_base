@@ -1,13 +1,18 @@
+import 'dart:io';
 import 'dart:ui';
 
 import 'package:bittrex_app/i18n/application.dart';
 import 'package:bittrex_app/i18n/i18n_delegate.dart';
+import 'package:bittrex_app/ui/components/buttons/button_size.dart';
 import 'package:bittrex_app/ui/screens/home_screen.dart';
 import 'package:bittrex_app/ui/theme/theme_state.dart';
 import 'package:bittrex_app/ui/utils/exception_utils.dart';
+import 'package:core/repositories/providers/providers.dart';
+import 'package:core/stores/akamai_store.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_mobx/flutter_mobx.dart';
 import 'package:meta/meta.dart';
 import 'package:mobx/mobx.dart';
 import 'package:oktoast/oktoast.dart';
@@ -15,13 +20,16 @@ import 'package:provider/provider.dart';
 
 import './config/env.dart';
 import './routes/routes.dart';
+import 'i18n/i18n.dart';
+import 'platform_channel.dart';
+import 'ui/components/buttons/buttons.dart';
 import 'ui/theme/theme.dart';
 
 typedef OnError = void Function(dynamic error, {dynamic stack});
 
 // This widget is the root of your application.
 class App extends StatefulWidget {
-//  final AccountStore accountStore;
+  final AkamaiStore akamaiStore;
   final Env env;
   final Locale locale;
 
@@ -39,7 +47,7 @@ class App extends StatefulWidget {
   App({
     Key key,
     @required this.env,
-//    @required this.accountStore,
+    @required this.akamaiStore,
     @required this.locale,
   }) : super(key: key);
 
@@ -64,14 +72,19 @@ class _AppState extends State<App> with WidgetsBindingObserver {
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+  }
+
+  @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     debugPrint('new application state ${state.toString()}');
     switch (state) {
       case AppLifecycleState.resumed:
-//        _ws.connect();
+
         break;
       default:
-//        _ws.disconnect();
+
         break;
     }
   }
@@ -87,10 +100,12 @@ class _AppState extends State<App> with WidgetsBindingObserver {
     return MultiProvider(
       providers: [
         Provider<Env>.value(value: widget.env),
+        Provider<AkamaiStore>.value(value: widget.akamaiStore),
         Provider<ThemeState>.value(value: theme),
       ],
       child: OKToast(
         child: AppRoot(
+          akamaiStore: widget.akamaiStore,
           locale: locale,
         ),
         radius: 16.0,
@@ -109,13 +124,17 @@ class _AppState extends State<App> with WidgetsBindingObserver {
 
 class AppRoot extends StatefulWidget {
   final Locale locale;
+  final AkamaiStore akamaiStore;
 
-  AppRoot({Key key, this.locale}) : super(key: key);
+  AppRoot({Key key, this.locale, this.akamaiStore}) : super(key: key);
 
   _AppRootState createState() => _AppRootState();
 }
 
-class _AppRootState extends State<AppRoot> {
+class _AppRootState extends State<AppRoot> with TickerProviderStateMixin<AppRoot>, WidgetsBindingObserver{
+
+  AkamaiStore get akamaiStore => widget.akamaiStore;
+  PlatformChannel channel;
   I18nDelegate _i18nDelegate;
   void initRoutes() {
     Routes.configureRoutes(Routes.router);
@@ -124,17 +143,45 @@ class _AppRootState extends State<AppRoot> {
   @override
   Widget build(BuildContext context) {
     final themeState = Provider.of<ThemeState>(context);
-    return MaterialApp(
-      theme: themeState.theme,
-      home: HomeScreen(),
-      localizationsDelegates: [
-        _i18nDelegate,
-        //provides localised strings
-        GlobalMaterialLocalizations.delegate,
+
+    return MultiProvider(
+      providers: [
+        Provider<PlatformChannel>.value(value: channel)
       ],
-      supportedLocales: application.supportedLocales(),
-      onGenerateRoute: Routes.router.generator,
+      child: MaterialApp(
+        theme: themeState.theme,
+        home: Observer(builder: (_) {
+          bool isAuthenticating = akamaiStore.isBusyWithAkamai;
+
+
+          return Container(
+            color: Colors.white,
+            child: Center(
+              child: Padding(
+                padding: EdgeInsets.symmetric(vertical: theme.spacingDefault),
+                child: PrimaryButton(
+                  size: ButtonSize.normal,
+                  onPressed: isAuthenticating ? null : _loginHandler,
+                  child: Text("Login"),
+                ),
+              ),
+            ),
+          );
+        }),
+        localizationsDelegates: [
+          _i18nDelegate,
+          //provides localised strings
+          GlobalMaterialLocalizations.delegate,
+        ],
+        supportedLocales: application.supportedLocales(),
+        onGenerateRoute: Routes.router.generator,
+      ),
     );
+  }
+
+  _loginHandler() {
+    akamaiStore.akamaiAuthorize();
+
   }
 
   void onLocaleChange(Locale locale) {
@@ -151,9 +198,77 @@ class _AppRootState extends State<AppRoot> {
   @override
   void initState() {
     super.initState();
+
+    channel = PlatformChannel(onMethodCall);
     initRoutes();
     _i18nDelegate = I18nDelegate(newLocale: widget.locale);
     application.onLocaleChanged = onLocaleChange;
+    WidgetsBinding.instance.addObserver(this);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+//      if (widget.locale == null && _i18nDelegate.newLocale != _deviceLocale) {
+//        onLocaleChange(_deviceLocale);
+//      }
+//
+//      _registerDefaultHandlers();
+//
+//      // Refresh account data once per app session
+//      accountStore.refresh();
+//      when(
+//            (_) => accountStore.fetchError is UnauthorizedException,
+//            () => _handleUnauthenticatedError(accountStore.fetchError),
+//      );
+//
+//      if (accountStore.account != null) {
+        registerDeviceWithDeviceId();
+//        _ws.connect(); // No waiting
+//      }
+    });
+  }
+
+  void registerDeviceWithDeviceId() async {
+    var deviceId;
+
+    /// For iOS we store in secrect store to persist between installs
+    const storeKeyForIos = 'identifierForVendor';
+    if (Platform.isIOS) {
+      final secretProvider = container.resolve<SecretProvider>();
+      deviceId = await secretProvider.getString(storeKeyForIos);
+      if (deviceId == null) {
+        try {
+          deviceId = await channel.getDeviceUUID();
+          await secretProvider.setString(storeKeyForIos, deviceId);
+        } catch (e) {
+          // ignore
+          deviceId = null;
+        }
+      }
+    } else {
+      deviceId = await channel.getDeviceUUID();
+    }
+    if (deviceId != null) {
+      akamaiStore.registerDevice(deviceId: deviceId);
+    }
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  Future<dynamic> onMethodCall(MethodCall call) async {
+    debugPrint(
+        'Handling platform method call ${call.method}, arguments ${call.arguments}');
+
+    try {
+      switch (call.method) {
+
+        default:
+          return null;
+      }
+    } catch (e) {
+      debugPrint(e.toString());
+    }
   }
 }
 
