@@ -25,6 +25,8 @@ import 'platform_channel.dart';
 import 'ui/components/buttons/buttons.dart';
 import 'ui/theme/theme.dart';
 
+BuildContext _appContext; // Safe context to get navigator and I18n from
+
 typedef OnError = void Function(dynamic error, {dynamic stack});
 
 // This widget is the root of your application.
@@ -33,14 +35,47 @@ class App extends StatefulWidget {
   final Env env;
   final Locale locale;
 
+  final GlobalKey<_AppRootState> _rootKey = new GlobalKey<_AppRootState>();
+
   void onError(dynamic error, {dynamic stack}) {
-    if (error is MobXException) {
-      // We won't display or log Mobx error
+    if (error is UnauthorizedException) {
+      _rootKey.currentState._handleUnauthenticatedError(error);
       return;
     }
+
+    if (error is DeprecationException) {
+      _rootKey.currentState._handleApiDeprecationError(error);
+      return;
+    }
+
+    bool isInDebugMode = false;
+    assert(() {
+      isInDebugMode = true;
+      return true;
+    }());
+
+    if (isInDebugMode == false) {
+      if (error is MobXException ||
+          error is FlutterError ||
+          (error is DataProviderException && error.isSilent == true)) {
+        debugPrint(error.message);
+        // We won't display those error messages in release mode
+        ExceptionUtils.show(
+          I18n.of(_appContext).text('message_default_error_title'),
+        );
+        return;
+      }
+    }
+
     ExceptionUtils.show(error);
+
     if (stack != null) {
       debugPrint(stack.toString());
+      try {
+//        Crashlytics.instance.onError(stack);
+      } catch (e) {
+        // ignore
+      }
     }
   }
 
@@ -81,10 +116,8 @@ class _AppState extends State<App> with WidgetsBindingObserver {
     debugPrint('new application state ${state.toString()}');
     switch (state) {
       case AppLifecycleState.resumed:
-
         break;
       default:
-
         break;
     }
   }
@@ -105,8 +138,10 @@ class _AppState extends State<App> with WidgetsBindingObserver {
       ],
       child: OKToast(
         child: AppRoot(
+          key: widget._rootKey,
           akamaiStore: widget.akamaiStore,
           locale: locale,
+          env: widget.env,
         ),
         radius: 16.0,
         position: ToastPosition.bottom,
@@ -125,17 +160,23 @@ class _AppState extends State<App> with WidgetsBindingObserver {
 class AppRoot extends StatefulWidget {
   final Locale locale;
   final AkamaiStore akamaiStore;
+  final Env env;
 
-  AppRoot({Key key, this.locale, this.akamaiStore}) : super(key: key);
+  AppRoot({Key key, this.locale, this.env, this.akamaiStore}) : super(key: key);
 
   _AppRootState createState() => _AppRootState();
 }
 
-class _AppRootState extends State<AppRoot> with TickerProviderStateMixin<AppRoot>, WidgetsBindingObserver{
-
+class _AppRootState extends State<AppRoot>
+    with TickerProviderStateMixin<AppRoot>, WidgetsBindingObserver {
   AkamaiStore get akamaiStore => widget.akamaiStore;
+
   PlatformChannel channel;
   I18nDelegate _i18nDelegate;
+
+  GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
+  Locale _deviceLocale;
+
   void initRoutes() {
     Routes.configureRoutes(Routes.router);
   }
@@ -145,28 +186,28 @@ class _AppRootState extends State<AppRoot> with TickerProviderStateMixin<AppRoot
     final themeState = Provider.of<ThemeState>(context);
 
     return MultiProvider(
-      providers: [
-        Provider<PlatformChannel>.value(value: channel)
-      ],
+      providers: [Provider<PlatformChannel>.value(value: channel)],
       child: MaterialApp(
         theme: themeState.theme,
-        home: Observer(builder: (_) {
-          bool isAuthenticating = akamaiStore.isBusyWithAkamai;
-
-
-          return Container(
-            color: Colors.white,
-            child: Center(
-              child: Padding(
-                padding: EdgeInsets.symmetric(vertical: theme.spacingDefault),
-                child: PrimaryButton(
-                  size: ButtonSize.normal,
-                  onPressed: isAuthenticating ? null : _loginHandler,
-                  child: Text("Login"),
+        navigatorKey: _rootNavigatorKey,
+        home: Builder(builder: (ctx) {
+          _appContext = ctx;
+          return Observer(builder: (_) {
+            return Container(
+              color: akamaiStore.isBusyWithAkamai ? Colors.white: Colors.blueGrey,
+              child: Center(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(vertical: theme.spacingDefault),
+                  child: PrimaryButton(
+                    size: ButtonSize.normal,
+                    onPressed:
+                        akamaiStore.isBusyWithAkamai ? null : _loginHandler,
+                    child: Text("Login"),
+                  ),
                 ),
               ),
-            ),
-          );
+            );
+          });
         }),
         localizationsDelegates: [
           _i18nDelegate,
@@ -181,7 +222,6 @@ class _AppRootState extends State<AppRoot> with TickerProviderStateMixin<AppRoot
 
   _loginHandler() {
     akamaiStore.akamaiAuthorize();
-
   }
 
   void onLocaleChange(Locale locale) {
@@ -219,7 +259,7 @@ class _AppRootState extends State<AppRoot> with TickerProviderStateMixin<AppRoot
 //      );
 //
 //      if (accountStore.account != null) {
-        registerDeviceWithDeviceId();
+      registerDeviceWithDeviceId();
 //        _ws.connect(); // No waiting
 //      }
     });
@@ -262,7 +302,6 @@ class _AppRootState extends State<AppRoot> with TickerProviderStateMixin<AppRoot
 
     try {
       switch (call.method) {
-
         default:
           return null;
       }
@@ -270,6 +309,10 @@ class _AppRootState extends State<AppRoot> with TickerProviderStateMixin<AppRoot
       debugPrint(e.toString());
     }
   }
+
+  void _handleUnauthenticatedError(UnauthorizedException error) {}
+
+  void _handleApiDeprecationError(DeprecationException error) {}
 }
 
 ThemeState get theme => ThemeState(

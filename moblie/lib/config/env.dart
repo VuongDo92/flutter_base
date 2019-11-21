@@ -22,31 +22,12 @@ enum EnvType {
 abstract class Env {
   EnvType environmentType = EnvType.DEVELOPMENT;
 
-  /// pref to dio_remote_api_provider
-  String apiBaseUrlConfig = 'https://wwwstage.globe.com.ph/';
-
-  ApiProvider apiProvider;
-
-  RemoteApiProvider remoteApiProvider;
-
-  String appName = 'Rovo';
-  String baseUrl;
-  String host;
-
-  // API
+  String appName;
+  String apiBaseUrlConfig;
   String apiBaseUrl;
 
-  // Database Config
-  int dbVersion = 1;
-  String dbName = 'rovo-dev.db';
-
-  // Third party api keys
-  String amplitudeApiKey;
-  String stripeApiKey;
-  String googleMapApiKey;
-
-  String deeplinkScheme;
-  List<String> rovoDomains;
+  ApiProvider apiProvider;
+  RemoteApiProvider remoteApiProvider;
 
   Env() {
     _init();
@@ -56,21 +37,19 @@ abstract class Env {
     _registerProviders();
     _registerRepositories();
 
-    AuthenticateRepository accountRepository = container.resolve<AuthenticateRepository>();
-    await accountRepository.init();
+    final all = await Future.wait([
+      container.resolve<AuthenticateRepository>().init(),
+      container.resolve<LocalStorageProvider>().getString('locale'),
+    ]);
 
-    // todo implement localization
-//    final locale = container.resolve<LocalStorageProvider>().getString('locale');
-//
-//    String localeString =  locale as String ?? 'en';
-
-    AkamaiStore akamaiStore = AkamaiStore(authenticateRepository: accountRepository);
+    String localeString = all.last as String;
+    AkamaiStore akamaiStore = AkamaiStore(authenticateRepository: container.resolve<AuthenticateRepository>());
 
     // Set up error hooks and run app
     final app = App(
       env: this,
       akamaiStore: akamaiStore,
-      locale: Locale('en'),
+      locale: localeString != null ? Locale(localeString) : null,
     );
 
     if(remoteApiProvider is DioRemoteApiProvider) {
@@ -85,7 +64,11 @@ abstract class Env {
       isInDebugMode = true;
       return true;
     }());
-    // todo first init & config Crashlytics
+
+    /**
+     * todo first init & config Crashlytics
+     * ***/
+
     FlutterError.onError = (FlutterErrorDetails details) async {
       if (isInDebugMode) {
         // In development mode simply print to console.
