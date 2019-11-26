@@ -61,10 +61,30 @@ dependencies:
   permission_handler: ^2.2.0
   rxdart: ^0.20.0
   keyboard_visibility: any
-#  adhara_socket_io:
-#    git:
-#      url: https://github.com/Rovoapp/flutter_socket_io.git
-#      ref: f8e21cf22a9611e1ec28c640eb571aaacc21503f
+  # image util
+  image_picker: ^0.5.0+9
+  flutter_advanced_networkimage:
+    git:
+      url: https://github.com/mchome/flutter_advanced_networkimage.git
+      ref: 3688a8177d94b8e324b16dfeb01f70c5a6c83d59
+  image_downloader: ^0.15.4
+  multi_image_picker: ^4.5.9
+  #image processing
+  image: ^2.0.7
+  image_crop:
+    git:
+      url: https://github.com/thesoftwarefanatics/image_crop.git
+      ref: 650631b0c76ae07820bc7c2d61317cb73d70c6a7
+  # Push Notify
+  flutter_local_notifications:
+    git:
+      url: https://github.com/VuongDo92/flutter_local_notifications.git
+  firebase_messaging:
+    git:
+      url: https://github.com/VuongDo92/flutterfire.git
+      path: packages/firebase_messaging
+  firebase_core: ^0.4.0
+
 dev_dependencies:
   core:
     path: ../core

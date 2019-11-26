@@ -29,6 +29,16 @@ abstract class Env {
   ApiProvider apiProvider;
   RemoteApiProvider remoteApiProvider;
 
+  // Image
+  String cloudFrontUrl;
+  String s3Bucket;
+  List<String> s3Hosts = [
+    'https://s3-ap-southeast-1.amazonaws.com',
+    'https://s3.ap-southeast-1.amazonaws.com'
+  ];
+  String defaultProfilePictureKey = 'profiles/pictures/default.png';
+  String fbHost = 'https://platform-lookaside.fbsbx.com';
+
   Env() {
     _init();
   }
