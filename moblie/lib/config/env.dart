@@ -4,12 +4,14 @@ import 'dart:isolate';
 import 'package:bittrex_app/app.dart';
 import 'package:bittrex_app/provider/dio_api_provider.dart';
 import 'package:bittrex_app/provider/dio_remote_api_provider.dart';
+import 'package:bittrex_app/provider/firebase_push_provider.dart';
 import 'package:bittrex_app/provider/mobile_provider.dart';
 import 'package:core/stores/akamai_store.dart';
 
 import 'package:core/repositories/providers/providers.dart';
 import 'package:core/repositories/authenticate_repository.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:kiwi/kiwi.dart' as kiwi;
 
 kiwi.Container container = kiwi.Container();
@@ -53,7 +55,8 @@ abstract class Env {
     ]);
 
     String localeString = all.last as String;
-    AkamaiStore akamaiStore = AkamaiStore(authenticateRepository: container.resolve<AuthenticateRepository>());
+    AkamaiStore akamaiStore = AkamaiStore(
+        authenticateRepository: container.resolve<AuthenticateRepository>());
 
     // Set up error hooks and run app
     final app = App(
@@ -62,10 +65,10 @@ abstract class Env {
       locale: localeString != null ? Locale(localeString) : null,
     );
 
-    if(remoteApiProvider is DioRemoteApiProvider) {
+    if (remoteApiProvider is DioRemoteApiProvider) {
       remoteApiProvider.registerApp(app);
     }
-    if(apiProvider is DioApiProvider) {
+    if (apiProvider is DioApiProvider) {
       apiProvider.registerApp(app);
     }
 
@@ -109,21 +112,23 @@ abstract class Env {
   }
 
   void _registerProviders() async {
+    container.registerSingleton<PushProvider, FirebasePushProvider>(
+        (c) => FirebasePushProvider());
 
     container.registerSingleton<RemoteApiProvider, DioRemoteApiProvider>(
-            (c) => DioRemoteApiProvider(apiBaseUrlConfig));
+        (c) => DioRemoteApiProvider(apiBaseUrlConfig));
 
     container.registerSingleton<ApiProvider, DioApiProvider>(
         (c) => DioApiProvider(apiBaseUrl));
-  
+
     container.registerSingleton<SecretProvider, SecureStorageProvider>(
         (c) => SecureStorageProvider());
 
     container.registerSingleton<LocalStorageProvider, MobileStorageProvider>(
         (c) => MobileStorageProvider());
-    
-    container.registerSingleton<RemoteConfigProvider, MobileConfigProvider>((c) => MobileConfigProvider());
 
+    container.registerSingleton<RemoteConfigProvider, MobileConfigProvider>(
+        (c) => MobileConfigProvider());
   }
 
   void _registerRepositories() {
@@ -131,10 +136,11 @@ abstract class Env {
     final apiProvider = container.resolve<ApiProvider>();
     final secretProvider = container.resolve<SecretProvider>();
     final localStorageProvider = container.resolve<LocalStorageProvider>();
+    final pushProvider = container.resolve<PushProvider>();
 
-    final AuthenticateRepository authenticateRepo = AuthenticateRepository(apiRemoteProvider, apiProvider, secretProvider, localStorageProvider);
+    final AuthenticateRepository authenticateRepo = AuthenticateRepository(
+        apiRemoteProvider, apiProvider, secretProvider, localStorageProvider, pushProvider);
 
     container.registerSingleton((c) => authenticateRepo);
   }
 }
-

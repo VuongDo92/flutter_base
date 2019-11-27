@@ -1,5 +1,7 @@
 import 'dart:io';
 import 'dart:ui';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:kiwi/kiwi.dart' as kiwi;
 
 import 'package:bittrex_app/i18n/application.dart';
 import 'package:bittrex_app/i18n/i18n_delegate.dart';
@@ -25,7 +27,43 @@ import 'platform_channel.dart';
 import 'ui/components/buttons/buttons.dart';
 import 'ui/theme/theme.dart';
 
+
+
+Future<dynamic> myBackgroundMessageHandler(Map<String, dynamic> message) async {
+  print(":::TAG::: myBackgroundMessageHandler: $message");
+
+//  await _showBackgroundNotification(message);
+}
+
+Future<void> _showBackgroundNotification(Map<String, dynamic> message) async {
+  FlutterLocalNotificationsPlugin notificationsPlugin = FlutterLocalNotificationsPlugin();
+  var initializationSettingsAndroid =
+  AndroidInitializationSettings('app_icon');
+  var initializationSettingsIOS = IOSInitializationSettings(
+      onDidReceiveLocalNotification: (int id, String title, String body, String payload) {
+        return;
+      });
+  var initializationSettings = InitializationSettings(
+      initializationSettingsAndroid, initializationSettingsIOS);
+  notificationsPlugin.initialize(initializationSettings,
+      onSelectNotification: (String payload) {
+        return;
+      });
+  var androidPlatformChannelSpecifics = AndroidNotificationDetails(
+      'your channel id', 'your channel name', 'your channel description',
+      importance: Importance.Max, priority: Priority.High, ticker: 'ticker');
+  var iOSPlatformChannelSpecifics = IOSNotificationDetails();
+  var platformChannelSpecifics = NotificationDetails(
+      androidPlatformChannelSpecifics, iOSPlatformChannelSpecifics);
+  await notificationsPlugin.show(0, message['data']['title'],
+      message['data']['body'], platformChannelSpecifics,
+      payload: 'item x');
+}
+
+
 BuildContext _appContext; // Safe context to get navigator and I18n from
+
+
 
 typedef OnError = void Function(dynamic error, {dynamic stack});
 
@@ -194,7 +232,8 @@ class _AppRootState extends State<AppRoot>
           _appContext = ctx;
           return Observer(builder: (_) {
             return Container(
-              color: akamaiStore.isBusyWithAkamai ? Colors.white: Colors.blueGrey,
+              color:
+                  akamaiStore.isBusyWithAkamai ? Colors.white : Colors.blueGrey,
               child: Center(
                 child: Padding(
                   padding: EdgeInsets.symmetric(vertical: theme.spacingDefault),
@@ -220,6 +259,18 @@ class _AppRootState extends State<AppRoot>
     );
   }
 
+  bool _handleNotificationAction(Map<String, dynamic> message) {
+    print("_handleNotificationAction");
+    if (message == null) {
+      print("_handleNotificationAction with message is null");
+      return false;
+    }
+    print("_handleNotificationAction with message is non-null");
+
+    // TODO: handle redirect screen
+    return true;
+  }
+
   _loginHandler() {
     akamaiStore.akamaiAuthorize();
   }
@@ -241,6 +292,12 @@ class _AppRootState extends State<AppRoot>
 
     channel = PlatformChannel(onMethodCall);
     initRoutes();
+
+//    Future.delayed(Duration(minutes: 1), () {
+//      container.resolve<PushProvider>().init();
+//    });
+
+
     _i18nDelegate = I18nDelegate(newLocale: widget.locale);
     application.onLocaleChanged = onLocaleChange;
     WidgetsBinding.instance.addObserver(this);
@@ -249,7 +306,7 @@ class _AppRootState extends State<AppRoot>
 //        onLocaleChange(_deviceLocale);
 //      }
 //
-//      _registerDefaultHandlers();
+      _registerDefaultHandlers();
 //
 //      // Refresh account data once per app session
 //      accountStore.refresh();
@@ -263,6 +320,12 @@ class _AppRootState extends State<AppRoot>
 //        _ws.connect(); // No waiting
 //      }
     });
+  }
+
+  Future<void> _registerDefaultHandlers() async {
+    final pushProvider = kiwi.Container().resolve<PushProvider>();
+    pushProvider.notificationBackgroundMessage = myBackgroundMessageHandler;
+    await pushProvider.init();
   }
 
   void registerDeviceWithDeviceId() async {

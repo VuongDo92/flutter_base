@@ -33,7 +33,7 @@ class DioRemoteApiProvider implements RemoteApiProvider {
   Future<dynamic> fetchConfig() async {
     try {
       final Response response =
-          await _dio.get('bin/globe/globeone/app-api.json');
+          await _dio.get('/bin/globe/globeone/app-api.json');
       final dynamic data = response.data['data'];
 
       return data;

@@ -1,6 +1,10 @@
-typedef bool NotificationActionHandler(Map<String, dynamic> notifiication);
+
+typedef Future<dynamic> NotificationBackgroundMessage(Map<String, dynamic> message);
 
 abstract class PushProvider {
+
+  NotificationBackgroundMessage notificationBackgroundMessage;
+
   String pushToken;
 
   Future init();
@@ -18,6 +22,4 @@ abstract class PushProvider {
 
   void clearNotificationMessages(String type, String key,
       {bool clearNotification});
-
-  void showLocalNotificationIos({String title, String message, String link});
 }

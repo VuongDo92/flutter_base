@@ -41,9 +41,10 @@ class AuthenticateRepository {
   ApiProvider _apiProvider;
   SecretProvider _secretProvider;
   LocalStorageProvider _localStorageProvider;
+  PushProvider _pushProvider;
 
   AuthenticateRepository(this._remoteApiProvider, this._apiProvider,
-      this._secretProvider, this._localStorageProvider) {
+      this._secretProvider, this._localStorageProvider, this._pushProvider) {
     this.events.listen((event) async {
       if (event is LoggedInEvent) {
       } else if (event is LoggedOutEvent) {}

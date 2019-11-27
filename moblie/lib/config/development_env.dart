@@ -8,7 +8,7 @@ class DevelopmentEnv extends Env {
   String appName = "Flutter-Base";
 
   @override
-  String apiBaseUrl = 'https://ocspstage.globe.com.ph';
+  String apiBaseUrl = 'https://ocspstage.globe.com.ph/';
 
   @override
   String apiBaseUrlConfig = 'https://wwwstage.globe.com.ph/';

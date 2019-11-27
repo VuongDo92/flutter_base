@@ -201,8 +201,8 @@ packages:
     dependency: "direct main"
     description:
       path: "packages/firebase_messaging"
-      ref: HEAD
-      resolved-ref: "14ef4ea2f0879a1459a84d7a9a9dc19317148623"
+      ref: dd757cdbd616cb11b948d8018895695779ff0bae
+      resolved-ref: dd757cdbd616cb11b948d8018895695779ff0bae
       url: "https://github.com/VuongDo92/flutterfire.git"
     source: git
     version: "6.0.1"
@@ -339,13 +339,6 @@ packages:
       url: "https://github.com/thesoftwarefanatics/image_crop.git"
     source: git
     version: "0.3.0"
-  image_downloader:
-    dependency: "direct main"
-    description:
-      name: image_downloader
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "0.15.4"
   image_picker:
     dependency: "direct main"
     description:
