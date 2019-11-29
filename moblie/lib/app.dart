@@ -324,7 +324,8 @@ class _AppRootState extends State<AppRoot>
 
   Future<void> _registerDefaultHandlers() async {
     final pushProvider = kiwi.Container().resolve<PushProvider>();
-    pushProvider.notificationBackgroundMessage = myBackgroundMessageHandler;
+//    pushProvider.backgroundMessage = myBackgroundMessageHandler;
+
     await pushProvider.init();
   }
 

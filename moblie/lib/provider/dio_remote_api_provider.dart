@@ -1,4 +1,5 @@
 import 'package:bittrex_app/app.dart';
+import 'package:bittrex_app/config/env.dart';
 import 'package:core/repositories/providers/providers.dart';
 import 'package:dio/dio.dart';
 

@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:bittrex_app/config/env.dart';
 import 'package:core/repositories/providers/api_provider.dart';
 import 'package:core/repositories/providers/providers.dart';
 import 'package:dio/dio.dart';
