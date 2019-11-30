@@ -36,7 +36,7 @@ def getCurrentFlavor() {
     Gradle gradle = getGradle()
     String tskReqStr = gradle.getStartParameter().getTaskRequests().toString()
 
-    Pattern pattern;
+    Pattern pattern
 
     if (tskReqStr.contains("assemble"))
         pattern = Pattern.compile("assemble(\\w+)(Release|Debug)")
@@ -46,11 +46,9 @@ def getCurrentFlavor() {
     Matcher matcher = pattern.matcher(tskReqStr)
 
     if (matcher.find()) {
-        println matcher.group(1).toLowerCase()
         return matcher.group(1).toLowerCase()
     } else {
-        println "NO MATCH FOUND"
-        return "";
+        return ""
     }
 }
 
@@ -59,15 +57,11 @@ def getCurrentBuildType() {
     String tskReqStr = gradle.getStartParameter().getTaskRequests().toString()
 
     if (tskReqStr.contains("Release")) {
-        println "getCurrentBuildType release"
         return "release"
     } else if (tskReqStr.contains("Debug")) {
-        println "getCurrentBuildType debug"
         return "debug"
     }
-
-    println "NO MATCH FOUND"
-    return "";
+    return ""
 }
 
 apply plugin: 'com.android.application'
@@ -110,7 +104,7 @@ android {
 
         staging {
             dimension "app"
-            applicationId "com.bittrex.bittrex_app.alpha"
+            applicationId "com.bittrex.bittrex_app.staging"
             versionCode 1
             versionName "1.0.0"
         }
@@ -133,14 +127,14 @@ android {
         debug {
             keyAlias 'androiddebugkey'
             keyPassword 'android'
-            storeFile file('/keystore/debug.keystore')
+            storeFile file('keystore/debug.keystore')
             storePassword 'android'
         }
     }
 
     buildTypes {
         debug {
-//            signingConfig signingConfigs.debug
+            signingConfig signingConfigs.debug
             minifyEnabled false
             debuggable true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
@@ -155,24 +149,6 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
             versionNameSuffix "." + getBuildNumber()
             matchingFallbacks = ['release']
-        }
-
-        applicationVariants.all { variant ->
-            def buildTypeName = variant.buildType.name
-            def flavorName = variant.productFlavors[0].name
-
-            def googleServicesJson = 'google-services.json'
-            def originalPath = "src/$flavorName/google-services/$buildTypeName/$googleServicesJson"
-            def destPath = "."
-
-            copy {
-                if(flavorName.equals(getCurrentFlavor()) && buildTypeName.equals(getCurrentBuildType())) {
-                    println originalPath
-                    from originalPath
-                    println destPath
-                    into destPath
-                }
-            }
         }
 
         lintOptions {
@@ -197,9 +173,30 @@ android {
             sourceCompatibility JavaVersion.VERSION_1_8
             targetCompatibility JavaVersion.VERSION_1_8
         }
+
+        applicationVariants.all { variant ->
+            def buildTypeName = variant.buildType.name
+            def flavorName = variant.productFlavors[0].name
+
+            def googleServicesJson = 'google-services.json'
+            def originalPath = "src/$flavorName/google-services/$buildTypeName/$googleServicesJson"
+            def destPath = '.'
+
+            copy {
+                if (flavorName.equals(getCurrentFlavor()) && buildTypeName.equals(getCurrentBuildType())) {
+                    task "${flavorName}${buildTypeName.capitalize()}CopyFileGoogleService"(type: Copy)
+                    "${flavorName}${buildTypeName.capitalize()}CopyFileGoogleService" {
+                        description = 'copy some file(s)'
+                        from "${originalPath}"
+                        into "${destPath}"
+                        println description
+                    }
+                    tasks.getByPath(":${project.name}:assemble${flavorName.capitalize()}${buildTypeName.capitalize()}").dependsOn "${flavorName}${buildTypeName.capitalize()}CopyFileGoogleService"
+                }
+            }
+        }
     }
 }
-
 
 flutter {
     source '../..'
