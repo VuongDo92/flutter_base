@@ -10,7 +10,7 @@
 
     <application
         android:name=".Application"
-        android:label="bittrex_app"
+        android:label="${appName}${appNameSuffix}"
         android:icon="@mipmap/ic_launcher">
         <activity
             android:name=".MainActivity"

@@ -100,6 +100,7 @@ android {
             applicationId "com.bittrex.bittrex_app.alpha"
             versionCode 1
             versionName "1.0.0"
+            manifestPlaceholders.appNameSuffix = " DEV"
         }
 
         staging {
@@ -107,6 +108,8 @@ android {
             applicationId "com.bittrex.bittrex_app.staging"
             versionCode 1
             versionName "1.0.0"
+            manifestPlaceholders.appNameSuffix = " STAG"
+
         }
 
         production {
@@ -114,6 +117,7 @@ android {
             applicationId "com.bittrex.bittrex_app"
             versionCode 1
             versionName "1.0.0"
+            manifestPlaceholders.appNameSuffix = ""
         }
     }
 
@@ -140,6 +144,7 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
             versionNameSuffix "." + getBuildNumber()
             matchingFallbacks = ['debug']
+            manifestPlaceholders.appName = "Preg Debug"
         }
 
         release {
@@ -149,6 +154,7 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
             versionNameSuffix "." + getBuildNumber()
             matchingFallbacks = ['release']
+            manifestPlaceholders.appName = "Bittrex"
         }
 
         lintOptions {
