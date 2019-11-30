@@ -6,18 +6,17 @@ import 'package:bittrex_app/provider/dio_api_provider.dart';
 import 'package:bittrex_app/provider/dio_remote_api_provider.dart';
 import 'package:bittrex_app/provider/firebase_push_provider.dart';
 import 'package:bittrex_app/provider/mobile_provider.dart';
-import 'package:core/stores/akamai_store.dart';
-
-import 'package:core/repositories/providers/providers.dart';
 import 'package:core/repositories/authenticate_repository.dart';
+import 'package:core/repositories/providers/providers.dart';
+import 'package:core/stores/akamai_store.dart';
 import 'package:flutter/widgets.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:kiwi/kiwi.dart' as kiwi;
 
 kiwi.Container container = kiwi.Container();
 
 enum EnvType {
   DEVELOPMENT,
+  STAGING,
   PRODUCTION,
 }
 
@@ -139,7 +138,11 @@ abstract class Env {
     final pushProvider = container.resolve<PushProvider>();
 
     final AuthenticateRepository authenticateRepo = AuthenticateRepository(
-        apiRemoteProvider, apiProvider, secretProvider, localStorageProvider, pushProvider);
+        apiRemoteProvider,
+        apiProvider,
+        secretProvider,
+        localStorageProvider,
+        pushProvider);
 
     container.registerSingleton((c) => authenticateRepo);
   }

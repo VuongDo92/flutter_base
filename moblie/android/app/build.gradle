@@ -1,3 +1,6 @@
+import java.util.regex.Matcher
+import java.util.regex.Pattern
+
 def localProperties = new Properties()
 def localPropertiesFile = rootProject.file('local.properties')
 if (localPropertiesFile.exists()) {
@@ -11,6 +14,14 @@ if (flutterRoot == null) {
     throw new GradleException("Flutter SDK not found. Define location with flutter.sdk in the local.properties file.")
 }
 
+def getBuildNumber = { ->
+    def buildNumber = localProperties.getProperty('flutter.versionCode')
+    if (buildNumber == null || buildNumber == 1) {
+        buildNumber = 'LOCAL'
+    }
+    return buildNumber
+}
+
 def flutterVersionCode = localProperties.getProperty('flutter.versionCode')
 if (flutterVersionCode == null) {
     flutterVersionCode = '1'
@@ -21,12 +32,51 @@ if (flutterVersionName == null) {
     flutterVersionName = '1.0'
 }
 
+def getCurrentFlavor() {
+    Gradle gradle = getGradle()
+    String tskReqStr = gradle.getStartParameter().getTaskRequests().toString()
+
+    Pattern pattern;
+
+    if (tskReqStr.contains("assemble"))
+        pattern = Pattern.compile("assemble(\\w+)(Release|Debug)")
+    else
+        pattern = Pattern.compile("generate(\\w+)(Release|Debug)")
+
+    Matcher matcher = pattern.matcher(tskReqStr)
+
+    if (matcher.find()) {
+        println matcher.group(1).toLowerCase()
+        return matcher.group(1).toLowerCase()
+    } else {
+        println "NO MATCH FOUND"
+        return "";
+    }
+}
+
+def getCurrentBuildType() {
+    Gradle gradle = getGradle()
+    String tskReqStr = gradle.getStartParameter().getTaskRequests().toString()
+
+    if (tskReqStr.contains("Release")) {
+        println "getCurrentBuildType release"
+        return "release"
+    } else if (tskReqStr.contains("Debug")) {
+        println "getCurrentBuildType debug"
+        return "debug"
+    }
+
+    println "NO MATCH FOUND"
+    return "";
+}
+
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 apply from: "$flutterRoot/packages/flutter_tools/gradle/flutter.gradle"
 
 android {
     compileSdkVersion 28
+    buildToolsVersion '28.0.3'
 
     sourceSets {
         main.java.srcDirs += 'src/main/kotlin'
@@ -34,34 +84,129 @@ android {
 
     lintOptions {
         disable 'InvalidPackage'
+        checkReleaseBuilds false
     }
 
     defaultConfig {
-        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
         applicationId "com.bittrex.bittrex_app"
         minSdkVersion 19
         targetSdkVersion 28
-        versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        multiDexEnabled true
         manifestPlaceholders = [
                 'appAuthRedirectScheme': 'ph.com.globe.globeone.prod'
         ]
     }
 
-    buildTypes {
+    flavorDimensions "app"
+    productFlavors {
+        development {
+            dimension "app"
+            applicationId "com.bittrex.bittrex_app.alpha"
+            versionCode 1
+            versionName "1.0.0"
+        }
+
+        staging {
+            dimension "app"
+            applicationId "com.bittrex.bittrex_app.alpha"
+            versionCode 1
+            versionName "1.0.0"
+        }
+
+        production {
+            dimension "app"
+            applicationId "com.bittrex.bittrex_app"
+            versionCode 1
+            versionName "1.0.0"
+        }
+    }
+
+    signingConfigs {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig signingConfigs.debug
+            keyAlias 'androiddebugkey'
+            keyPassword 'android'
+            storeFile file('keystore/debug.keystore')
+            storePassword 'android'
+        }
+        debug {
+            keyAlias 'androiddebugkey'
+            keyPassword 'android'
+            storeFile file('/keystore/debug.keystore')
+            storePassword 'android'
+        }
+    }
+
+    buildTypes {
+        debug {
+//            signingConfig signingConfigs.debug
+            minifyEnabled false
+            debuggable true
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            versionNameSuffix "." + getBuildNumber()
+            matchingFallbacks = ['debug']
+        }
+
+        release {
+            signingConfig signingConfigs.release
+            minifyEnabled false
+            debuggable getBuildNumber() == "LOCAL"
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            versionNameSuffix "." + getBuildNumber()
+            matchingFallbacks = ['release']
+        }
+
+        applicationVariants.all { variant ->
+            def buildTypeName = variant.buildType.name
+            def flavorName = variant.productFlavors[0].name
+
+            def googleServicesJson = 'google-services.json'
+            def originalPath = "src/$flavorName/google-services/$buildTypeName/$googleServicesJson"
+            def destPath = "."
+
+            copy {
+                if(flavorName.equals(getCurrentFlavor()) && buildTypeName.equals(getCurrentBuildType())) {
+                    println originalPath
+                    from originalPath
+                    println destPath
+                    into destPath
+                }
+            }
+        }
+
+        lintOptions {
+            abortOnError false
+            disable 'MissingTranslation'
+        }
+
+        dexOptions {
+            jumboMode true
+            preDexLibraries false
+            javaMaxHeapSize "4g"
+        }
+
+        packagingOptions {
+            exclude 'META-INF/DEPENDENCIES'
+            exclude 'META-INF/NOTICE'
+            exclude 'META-INF/LICENSE'
+            exclude 'META-INF/*'
+        }
+
+        compileOptions {
+            sourceCompatibility JavaVersion.VERSION_1_8
+            targetCompatibility JavaVersion.VERSION_1_8
         }
     }
 }
 
+
 flutter {
     source '../..'
 }
-
+repositories {
+    maven { url "http://kochava.bintray.com/maven" }
+}
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
     testImplementation 'junit:junit:4.12'

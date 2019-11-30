@@ -1,7 +1,7 @@
 import './env.dart';
 
 class ProductionEnv extends Env {
-  EnvType environmentType = EnvType.DEVELOPMENT;
+  EnvType environmentType = EnvType.PRODUCTION;
   static ProductionEnv value;
 
   @override
