@@ -1,28 +1,9 @@
-import 'dart:io';
-
 import 'package:core/repositories/providers/providers.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
-/*
-/// Signature of callback passed to [initialize]. Callback triggered when user taps on a notification
-typedef SelectNotificationCallback = Future<dynamic> Function(String payload);
-
-// Signature of the callback that is triggered when a notification is shown whilst the app is in the foreground. Applicable to iOS versions < 10 only
-typedef DidReceiveLocalNotificationCallback = Future<dynamic> Function(
-    int id, String title, String body, String payload);
-
-  Future<void> onDidReceiveLocalNotification(
-      int id, String title, String body, String payload) async {}
-
-  Future<void> onSelectNotification(String payload) async {}
-
-
-* */
-
 class FirebasePushProvider implements PushProvider {
-
   FlutterLocalNotificationsPlugin localPushPlugin;
 
   String pushToken;
@@ -45,26 +26,36 @@ class FirebasePushProvider implements PushProvider {
   }
 
   @override
-  Future<void> setConfigure() async {
-    if(_firebaseMessaging == null) {
+  Future<void> setConfigure({
+    NotificationMessageCallback onForegroundMessage,
+    NotificationMessageCallback onBackgroundMessage,
+  }) async {
+    if (onBackgroundMessage != null) {
+      this.backgroundMessage = onBackgroundMessage;
+    }
+    if (onForegroundMessage != null) {
+      this.foregroundMessage = onForegroundMessage;
+    }
+    if (_firebaseMessaging == null) {
       return;
     }
     _firebaseMessaging.configure(
-      onMessage: foregroundMessage,
-      onLaunch: foregroundMessage,
-      onResume: foregroundMessage,
-      onBackgroundMessage: Platform.isIOS ? null : backgroundMessage
-    );
+        onMessage: foregroundMessage,
+        onLaunch: foregroundMessage,
+        onResume: foregroundMessage
+        );
   }
 
   @override
-  Future<void> init() async {
-
+  Future<void> init({
+    NotificationMessageCallback onForegroundMessage,
+    NotificationMessageCallback onBackgroundMessage,
+  }) async {
     /// init local-push-plugin
     localPushPlugin = FlutterLocalNotificationsPlugin();
 
     var initializationSettingsAndroid =
-    AndroidInitializationSettings('app_icon');
+        AndroidInitializationSettings('app_icon');
     var initializationSettingsIOS = IOSInitializationSettings(
         onDidReceiveLocalNotification: onDidReceiveLocalNotification);
     var initializationSettings = InitializationSettings(
@@ -84,8 +75,34 @@ class FirebasePushProvider implements PushProvider {
 
     pushToken = await _firebaseMessaging.getToken();
     print("Push Messaging token: $pushToken");
+
+    _firebaseMessaging.configure(
+      onMessage: (Map<String, dynamic> message) async {
+        print(":::TAG::: onMessage: $message");
+        await _showNotification(message);
+      },
+      onLaunch: (Map<String, dynamic> message) async {
+        print(":::TAG::: onLaunch: $message");
+        await _showNotification(message);
+      },
+      onResume: (Map<String, dynamic> message) async {
+        print(":::TAG::: onResume: $message");
+        await _showNotification(message);
+      },
+    );
   }
 
+  Future<void> _showNotification(Map<String, dynamic> message) async {
+    var androidPlatformChannelSpecifics = AndroidNotificationDetails(
+        'your channel id', 'your channel name', 'your channel description',
+        importance: Importance.Max, priority: Priority.High, ticker: 'ticker');
+    var iOSPlatformChannelSpecifics = IOSNotificationDetails();
+    var platformChannelSpecifics = NotificationDetails(
+        androidPlatformChannelSpecifics, iOSPlatformChannelSpecifics);
+    await localPushPlugin.show(0, message['data']['title'],
+        message['data']['body'], platformChannelSpecifics,
+        payload: 'item x');
+  }
   @override
   void requestNotificationPermission() {
     final iosNotificationSettings = const IosNotificationSettings(

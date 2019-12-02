@@ -1,12 +1,10 @@
 import 'dart:io';
 import 'dart:ui';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:kiwi/kiwi.dart' as kiwi;
 
 import 'package:bittrex_app/i18n/application.dart';
 import 'package:bittrex_app/i18n/i18n_delegate.dart';
 import 'package:bittrex_app/ui/components/buttons/button_size.dart';
-import 'package:bittrex_app/ui/screens/home_screen.dart';
 import 'package:bittrex_app/ui/theme/theme_state.dart';
 import 'package:bittrex_app/ui/utils/exception_utils.dart';
 import 'package:core/repositories/providers/providers.dart';
@@ -27,43 +25,12 @@ import 'platform_channel.dart';
 import 'ui/components/buttons/buttons.dart';
 import 'ui/theme/theme.dart';
 
-
-
 Future<dynamic> myBackgroundMessageHandler(Map<String, dynamic> message) async {
   print(":::TAG::: myBackgroundMessageHandler: $message");
 
 //  await _showBackgroundNotification(message);
 }
-
-Future<void> _showBackgroundNotification(Map<String, dynamic> message) async {
-  FlutterLocalNotificationsPlugin notificationsPlugin = FlutterLocalNotificationsPlugin();
-  var initializationSettingsAndroid =
-  AndroidInitializationSettings('app_icon');
-  var initializationSettingsIOS = IOSInitializationSettings(
-      onDidReceiveLocalNotification: (int id, String title, String body, String payload) {
-        return;
-      });
-  var initializationSettings = InitializationSettings(
-      initializationSettingsAndroid, initializationSettingsIOS);
-  notificationsPlugin.initialize(initializationSettings,
-      onSelectNotification: (String payload) {
-        return;
-      });
-  var androidPlatformChannelSpecifics = AndroidNotificationDetails(
-      'your channel id', 'your channel name', 'your channel description',
-      importance: Importance.Max, priority: Priority.High, ticker: 'ticker');
-  var iOSPlatformChannelSpecifics = IOSNotificationDetails();
-  var platformChannelSpecifics = NotificationDetails(
-      androidPlatformChannelSpecifics, iOSPlatformChannelSpecifics);
-  await notificationsPlugin.show(0, message['data']['title'],
-      message['data']['body'], platformChannelSpecifics,
-      payload: 'item x');
-}
-
-
 BuildContext _appContext; // Safe context to get navigator and I18n from
-
-
 
 typedef OnError = void Function(dynamic error, {dynamic stack});
 
@@ -293,40 +260,14 @@ class _AppRootState extends State<AppRoot>
     channel = PlatformChannel(onMethodCall);
     initRoutes();
 
-//    Future.delayed(Duration(minutes: 1), () {
-//      container.resolve<PushProvider>().init();
-//    });
-
+    kiwi.Container().resolve<PushProvider>().init();
 
     _i18nDelegate = I18nDelegate(newLocale: widget.locale);
     application.onLocaleChanged = onLocaleChange;
     WidgetsBinding.instance.addObserver(this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
-//      if (widget.locale == null && _i18nDelegate.newLocale != _deviceLocale) {
-//        onLocaleChange(_deviceLocale);
-//      }
-//
-      _registerDefaultHandlers();
-//
-//      // Refresh account data once per app session
-//      accountStore.refresh();
-//      when(
-//            (_) => accountStore.fetchError is UnauthorizedException,
-//            () => _handleUnauthenticatedError(accountStore.fetchError),
-//      );
-//
-//      if (accountStore.account != null) {
       registerDeviceWithDeviceId();
-//        _ws.connect(); // No waiting
-//      }
     });
-  }
-
-  Future<void> _registerDefaultHandlers() async {
-    final pushProvider = kiwi.Container().resolve<PushProvider>();
-//    pushProvider.backgroundMessage = myBackgroundMessageHandler;
-
-    await pushProvider.init();
   }
 
   void registerDeviceWithDeviceId() async {
