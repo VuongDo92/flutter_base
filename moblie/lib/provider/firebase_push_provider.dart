@@ -5,13 +5,42 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
+FlutterLocalNotificationsPlugin localPushPlugin =
+    FlutterLocalNotificationsPlugin();
+
 Future<void> _backgroundMessage(Map<String, dynamic> message) async {
   print(":::TAG::: onBackgroundMessage: $message");
+
+  await _showBackgroundNotification(message);
+}
+
+/// Schedules a notification that specifies a different icon, sound and vibration pattern
+Future<void> _showBackgroundNotification(Map<String, dynamic> message) async {
+  localPushPlugin = FlutterLocalNotificationsPlugin();
+  var initializationSettingsAndroid = AndroidInitializationSettings('app_icon');
+  var initializationSettingsIOS = IOSInitializationSettings(
+      onDidReceiveLocalNotification:
+          (int id, String title, String body, String payload) {
+    return;
+  });
+  var initializationSettings = InitializationSettings(
+      initializationSettingsAndroid, initializationSettingsIOS);
+  localPushPlugin.initialize(initializationSettings,
+      onSelectNotification: (String payload) {
+    return;
+  });
+  var androidPlatformChannelSpecifics = AndroidNotificationDetails(
+      'your channel id', 'your channel name', 'your channel description',
+      importance: Importance.Max, priority: Priority.High, ticker: 'ticker');
+  var iOSPlatformChannelSpecifics = IOSNotificationDetails();
+  var platformChannelSpecifics = NotificationDetails(
+      androidPlatformChannelSpecifics, iOSPlatformChannelSpecifics);
+  await localPushPlugin.show(0, message['data']['title'],
+      message['data']['body'], platformChannelSpecifics,
+      payload: 'item x');
 }
 
 class FirebasePushProvider implements PushProvider {
-  FlutterLocalNotificationsPlugin localPushPlugin;
-
   String pushToken;
   FirebaseMessaging _firebaseMessaging;
   NotificationMessageCallback backgroundMessage;
@@ -48,8 +77,7 @@ class FirebasePushProvider implements PushProvider {
     _firebaseMessaging.configure(
         onMessage: foregroundMessage,
         onLaunch: foregroundMessage,
-        onResume: foregroundMessage
-        );
+        onResume: foregroundMessage);
   }
 
   @override

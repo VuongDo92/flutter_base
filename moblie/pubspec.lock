@@ -200,7 +200,7 @@ packages:
   firebase_messaging:
     dependency: "direct main"
     description:
-      path: "../../flutterfire-custom/packages/firebase_messaging"
+      path: "../../flutterfire/packages/firebase_messaging"
       relative: true
     source: path
     version: "6.0.1"
@@ -372,13 +372,6 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "0.3.27"
-  keyboard_visibility:
-    dependency: "direct main"
-    description:
-      name: keyboard_visibility
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "0.5.6"
   kiwi:
     dependency: "direct main"
     description:

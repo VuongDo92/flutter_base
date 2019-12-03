@@ -60,7 +60,6 @@ dependencies:
   dio: ^2.0.1
   permission_handler: ^2.2.0
   rxdart: ^0.20.0
-  keyboard_visibility: any
   # image util
   image_picker: ^0.5.0+9
   flutter_advanced_networkimage:
@@ -85,7 +84,7 @@ dependencies:
 #      path: packages/firebase_messaging
 #      ref: dd757cdbd616cb11b948d8018895695779ff0bae
   firebase_messaging:
-    path: ../../flutterfire-custom/packages/firebase_messaging
+    path: ../../flutterfire/packages/firebase_messaging
   firebase_core: ^0.4.2+1
 
 dev_dependencies:
