@@ -200,11 +200,9 @@ packages:
   firebase_messaging:
     dependency: "direct main"
     description:
-      path: "packages/firebase_messaging"
-      ref: dd757cdbd616cb11b948d8018895695779ff0bae
-      resolved-ref: dd757cdbd616cb11b948d8018895695779ff0bae
-      url: "https://github.com/VuongDo92/flutterfire.git"
-    source: git
+      path: "../../flutterfire-custom/packages/firebase_messaging"
+      relative: true
+    source: path
     version: "6.0.1"
   fixnum:
     dependency: transitive

@@ -1,7 +1,13 @@
+import 'dart:io';
+
 import 'package:core/repositories/providers/providers.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+
+Future<void> _backgroundMessage(Map<String, dynamic> message) async {
+  print(":::TAG::: onBackgroundMessage: $message");
+}
 
 class FirebasePushProvider implements PushProvider {
   FlutterLocalNotificationsPlugin localPushPlugin;
@@ -89,6 +95,7 @@ class FirebasePushProvider implements PushProvider {
         print(":::TAG::: onResume: $message");
         await _showNotification(message);
       },
+      onBackgroundMessage: Platform.isIOS ? null : _backgroundMessage,
     );
   }
 
@@ -103,6 +110,7 @@ class FirebasePushProvider implements PushProvider {
         message['data']['body'], platformChannelSpecifics,
         payload: 'item x');
   }
+
   @override
   void requestNotificationPermission() {
     final iosNotificationSettings = const IosNotificationSettings(
