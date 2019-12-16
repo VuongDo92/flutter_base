@@ -41,6 +41,7 @@ abstract class Env {
   String fbHost = 'https://platform-lookaside.fbsbx.com';
 
   Env() {
+    WidgetsFlutterBinding.ensureInitialized();
     _init();
   }
 

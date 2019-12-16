@@ -42,7 +42,7 @@ packages:
       name: async
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "2.3.0"
+    version: "2.4.0"
   bloc:
     dependency: transitive
     description:
@@ -200,9 +200,11 @@ packages:
   firebase_messaging:
     dependency: "direct main"
     description:
-      path: "../../flutterfire/packages/firebase_messaging"
-      relative: true
-    source: path
+      path: "packages/firebase_messaging"
+      ref: "383f9a6c402513d9e344fdc828120046ccc3b0a7"
+      resolved-ref: "383f9a6c402513d9e344fdc828120046ccc3b0a7"
+      url: "https://github.com/VuongDo92/flutterfire.git"
+    source: git
     version: "6.0.1"
   fixnum:
     dependency: transitive
@@ -327,7 +329,7 @@ packages:
       name: image
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "2.1.9"
+    version: "2.1.4"
   image_crop:
     dependency: "direct main"
     description:
@@ -350,7 +352,7 @@ packages:
       name: intl
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.15.8"
+    version: "0.16.0"
   js:
     dependency: transitive
     description:
@@ -392,14 +394,14 @@ packages:
       name: matcher
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.12.5"
+    version: "0.12.6"
   meta:
     dependency: transitive
     description:
       name: meta
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "1.1.7"
+    version: "1.1.8"
   mobx:
     dependency: "direct main"
     description:
@@ -490,7 +492,7 @@ packages:
       name: permission_handler
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "2.2.0"
+    version: "4.0.0"
   petitparser:
     dependency: transitive
     description:
@@ -621,7 +623,7 @@ packages:
       name: test_api
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.2.5"
+    version: "0.2.11"
   tuple:
     dependency: "direct main"
     description:
