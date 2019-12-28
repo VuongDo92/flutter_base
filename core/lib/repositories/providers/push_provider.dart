@@ -1,15 +1,24 @@
+typedef Future<dynamic> NotificationMessageCallback(
+    Map<String, dynamic> message);
+
 abstract class PushProvider {
+  NotificationMessageCallback backgroundMessage;
+  NotificationMessageCallback foregroundMessage;
+
   String pushToken;
 
-  Future init();
-  Future handleNotification({
-    String type,
-    String title,
-    String body,
-    String link,
-    String clickAction,
-    Map<String, dynamic> data,
+  Future init({
+    NotificationMessageCallback onForegroundMessage,
+    NotificationMessageCallback onBackgroundMessage,
   });
 
-  void showLocalNotificationIos({String title, String message, String link});
+  Future setConfigure({
+    NotificationMessageCallback onForegroundMessage,
+    NotificationMessageCallback onBackgroundMessage,
+  });
+
+  void requestNotificationPermission();
+
+  void clearNotificationMessages(String type, String key,
+      {bool clearNotification});
 }

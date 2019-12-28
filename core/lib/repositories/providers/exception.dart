@@ -64,7 +64,8 @@ class ServerException extends DataProviderException {
  * Token expired or need to login
  */
 class UnauthorizedException extends DataProviderException {
-  UnauthorizedException() : super(isSilent: true);
+  UnauthorizedException({dynamic originalException})
+      : super(isSilent: true, originalException: originalException);
 }
 
 /**
@@ -73,6 +74,15 @@ class UnauthorizedException extends DataProviderException {
 class ForbiddenException extends DataProviderException {
   ForbiddenException({String title, String message})
       : super(title: title, message: message);
+}
+
+class DeprecationException extends DataProviderException {
+  DeprecationException({dynamic originalException})
+      : super(
+          isSilent: true,
+          isTemporary: false,
+          originalException: originalException,
+        );
 }
 
 /**

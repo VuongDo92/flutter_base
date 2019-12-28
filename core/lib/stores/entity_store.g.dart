@@ -13,63 +13,68 @@ mixin _$EntityStore<T, K> on _EntityStore<T, K>, Store {
 
   @override
   T get entity {
+    _$entityAtom.context.enforceReadPolicy(_$entityAtom);
     _$entityAtom.reportObserved();
     return super.entity;
   }
 
   @override
   set entity(T value) {
-    _$entityAtom.context.checkIfStateModificationsAreAllowed(_$entityAtom);
-    super.entity = value;
-    _$entityAtom.reportChanged();
+    _$entityAtom.context.conditionallyRunInAction(() {
+      super.entity = value;
+      _$entityAtom.reportChanged();
+    }, _$entityAtom, name: '${_$entityAtom.name}_set');
   }
 
   final _$fetchErrorAtom = Atom(name: '_EntityStore.fetchError');
 
   @override
   Error get fetchError {
+    _$fetchErrorAtom.context.enforceReadPolicy(_$fetchErrorAtom);
     _$fetchErrorAtom.reportObserved();
     return super.fetchError;
   }
 
   @override
   set fetchError(Error value) {
-    _$fetchErrorAtom.context
-        .checkIfStateModificationsAreAllowed(_$fetchErrorAtom);
-    super.fetchError = value;
-    _$fetchErrorAtom.reportChanged();
+    _$fetchErrorAtom.context.conditionallyRunInAction(() {
+      super.fetchError = value;
+      _$fetchErrorAtom.reportChanged();
+    }, _$fetchErrorAtom, name: '${_$fetchErrorAtom.name}_set');
   }
 
   final _$refreshedAtAtom = Atom(name: '_EntityStore.refreshedAt');
 
   @override
   DateTime get refreshedAt {
+    _$refreshedAtAtom.context.enforceReadPolicy(_$refreshedAtAtom);
     _$refreshedAtAtom.reportObserved();
     return super.refreshedAt;
   }
 
   @override
   set refreshedAt(DateTime value) {
-    _$refreshedAtAtom.context
-        .checkIfStateModificationsAreAllowed(_$refreshedAtAtom);
-    super.refreshedAt = value;
-    _$refreshedAtAtom.reportChanged();
+    _$refreshedAtAtom.context.conditionallyRunInAction(() {
+      super.refreshedAt = value;
+      _$refreshedAtAtom.reportChanged();
+    }, _$refreshedAtAtom, name: '${_$refreshedAtAtom.name}_set');
   }
 
   final _$isFetchingDataAtom = Atom(name: '_EntityStore.isFetchingData');
 
   @override
   bool get isFetchingData {
+    _$isFetchingDataAtom.context.enforceReadPolicy(_$isFetchingDataAtom);
     _$isFetchingDataAtom.reportObserved();
     return super.isFetchingData;
   }
 
   @override
   set isFetchingData(bool value) {
-    _$isFetchingDataAtom.context
-        .checkIfStateModificationsAreAllowed(_$isFetchingDataAtom);
-    super.isFetchingData = value;
-    _$isFetchingDataAtom.reportChanged();
+    _$isFetchingDataAtom.context.conditionallyRunInAction(() {
+      super.isFetchingData = value;
+      _$isFetchingDataAtom.reportChanged();
+    }, _$isFetchingDataAtom, name: '${_$isFetchingDataAtom.name}_set');
   }
 
   final _$refreshAsyncAction = AsyncAction('refresh');

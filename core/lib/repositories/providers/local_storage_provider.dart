@@ -9,5 +9,6 @@ abstract class LocalStorageProvider {
   Future<bool> setDouble(String key, double value);
   Future<bool> setString(String key, String value);
 
+  Future<bool> contains(String key);
   Future<bool> remove(String key);
 }

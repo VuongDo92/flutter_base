@@ -1,13 +1,25 @@
 buildscript {
-    ext.kotlin_version = '1.2.71'
     repositories {
         google()
         jcenter()
     }
+    ext.kotlin_version = '1.3.10'
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.2.1'
+        classpath 'com.android.tools.build:gradle:3.5.1'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        classpath 'com.google.gms:google-services:4.3.2'
+    }
+
+    subprojects {
+        project.configurations.all {
+            resolutionStrategy.eachDependency { details ->
+                if (details.requested.group == 'androidx.core'
+                        && !details.requested.name.contains('androidx') ) {
+                    details.useVersion "1.0.2"
+                }
+            }
+        }
     }
 }
 
@@ -29,3 +41,38 @@ subprojects {
 task clean(type: Delete) {
     delete rootProject.buildDir
 }
+//
+//task developmentDebugCopyFileGoogleService(type: Copy) {
+//    from "src/development/debug/google-services.json"
+//    into "./app/"
+//    println "copied some file(s)"
+//}
+//
+//task stagingDebugCopyFileGoogleService(type: Copy) {
+//    from "src/staging/debug/google-services.json"
+//    into "./app/"
+//    println "copied some file(s)"
+//}
+//
+//task productionDebugCopyFileGoogleService(type: Copy) {
+//    from "src/production/debug/google-services.json"
+//    into "./app/"
+//    println "copied some file(s)"
+//}
+//task developmentReleaseCopyFileGoogleService(type: Copy) {
+//    from "src/development/release/google-services.json"
+//    into "./app/"
+//    println "copied some file(s)"
+//}
+//
+//task stagingReleaseCopyFileGoogleService(type: Copy) {
+//    from "src/staging/release/google-services.json"
+//    into "./app/"
+//    println "copied some file(s)"
+//}
+//
+//task productionReleaseCopyFileGoogleService(type: Copy) {
+//    from "src/production/release/google-services.json"
+//    into "./app/"
+//    println "copied some file(s)"
+//}

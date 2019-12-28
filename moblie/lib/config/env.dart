@@ -2,6 +2,13 @@ import 'dart:async';
 import 'dart:isolate';
 
 import 'package:bittrex_app/app.dart';
+import 'package:bittrex_app/provider/dio_api_provider.dart';
+import 'package:bittrex_app/provider/dio_remote_api_provider.dart';
+import 'package:bittrex_app/provider/firebase_push_provider.dart';
+import 'package:bittrex_app/provider/mobile_provider.dart';
+import 'package:core/repositories/authenticate_repository.dart';
+import 'package:core/repositories/providers/providers.dart';
+import 'package:core/stores/akamai_store.dart';
 import 'package:flutter/widgets.dart';
 import 'package:kiwi/kiwi.dart' as kiwi;
 
@@ -9,35 +16,32 @@ kiwi.Container container = kiwi.Container();
 
 enum EnvType {
   DEVELOPMENT,
+  STAGING,
   PRODUCTION,
 }
 
 abstract class Env {
   EnvType environmentType = EnvType.DEVELOPMENT;
 
-  String appName = 'Rovo';
-  String baseUrl;
-  String host;
-
-  // API
+  String appName;
+  String apiBaseUrlConfig;
   String apiBaseUrl;
-  String apiVersion;
 
-  String get apiUrl => '$apiBaseUrl/$apiVersion';
+  ApiProvider apiProvider;
+  RemoteApiProvider remoteApiProvider;
 
-  // Database Config
-  int dbVersion = 1;
-  String dbName = 'rovo-dev.db';
-
-  // Third party api keys
-  String amplitudeApiKey;
-  String stripeApiKey;
-  String googleMapApiKey;
-
-  String deeplinkScheme;
-  List<String> rovoDomains;
+  // Image
+  String cloudFrontUrl;
+  String s3Bucket;
+  List<String> s3Hosts = [
+    'https://s3-ap-southeast-1.amazonaws.com',
+    'https://s3.ap-southeast-1.amazonaws.com'
+  ];
+  String defaultProfilePictureKey = 'profiles/pictures/default.png';
+  String fbHost = 'https://platform-lookaside.fbsbx.com';
 
   Env() {
+    WidgetsFlutterBinding.ensureInitialized();
     _init();
   }
 
@@ -45,44 +49,48 @@ abstract class Env {
     _registerProviders();
     _registerRepositories();
 
-    // Init providers and repositories and blocs
     final all = await Future.wait([
-//      container.resolve<AccountRepository>().init(),
-//      container.resolve<RemoteConfigProvider>().init(),
-//      container.resolve<LocalStorageProvider>().getString('locale'),
+      container.resolve<AuthenticateRepository>().init(),
+      container.resolve<LocalStorageProvider>().getString('locale'),
     ]);
 
-//    container.resolve<PushProvider>().init();
+    String localeString = all.last as String;
+    AkamaiStore akamaiStore = AkamaiStore(
+        authenticateRepository: container.resolve<AuthenticateRepository>());
 
-    String localeString = /* all.last as String ??*/ 'en';
-
-//    AccountStore accountStore = AccountStore(
-//      accountRepository: container.resolve<AccountRepository>(),
-//    );
-
-    // Example of analytics
-//    AmplitudeAnalytics amplitude = AmplitudeAnalytics(amplitudeApiKey);
-//    Analytics.register(amplitude);
     // Set up error hooks and run app
     final app = App(
-//      accountStore: accountStore,
       env: this,
+      akamaiStore: akamaiStore,
       locale: localeString != null ? Locale(localeString) : null,
     );
+
+    if (remoteApiProvider is DioRemoteApiProvider) {
+      remoteApiProvider.registerApp(app);
+    }
+    if (apiProvider is DioApiProvider) {
+      apiProvider.registerApp(app);
+    }
 
     bool isInDebugMode = false;
     assert(() {
       isInDebugMode = true;
       return true;
     }());
-//    Crashlytics.instance.enableInDevMode = true;
-//    FlutterError.onError = (FlutterErrorDetails details) async {
-//      if (isInDebugMode) {
-//        // In development mode simply print to console.
-//        FlutterError.dumpErrorToConsole(details);
-//      }
-//      Crashlytics.instance.onError(details);
-//    };
+
+    /**
+     * todo first init & config Crashlytics
+     * ***/
+
+    FlutterError.onError = (FlutterErrorDetails details) async {
+      if (isInDebugMode) {
+        // In development mode simply print to console.
+        FlutterError.dumpErrorToConsole(details);
+      }
+      if (details.stack != null) {
+        debugPrint(details.toString());
+      }
+    };
     Isolate.current.addErrorListener(new RawReceivePort((dynamic pair) async {
       final isolateError = pair as List<dynamic>;
       await app.onError(
@@ -91,6 +99,10 @@ abstract class Env {
       );
     }).sendPort);
 
+    /// Disabling red screen of death in release mode
+    if (!isInDebugMode) {
+      ErrorWidget.builder = (FlutterErrorDetails details) => Container();
+    }
     // Run app
     return runZoned(() async {
       runApp(app);
@@ -100,84 +112,39 @@ abstract class Env {
   }
 
   void _registerProviders() async {
-//    container.registerSingleton<PushProvider, FirebasePushProvider>(
-//        (c) => FirebasePushProvider());
-//    container.registerSingleton<ApiProvider, DioApiProvider>(
-//        (c) => DioApiProvider(apiBaseUrl + '/' + apiVersion));
-//    container.registerSingleton<SecretProvider, SecureStorageProvider>(
-//        (c) => SecureStorageProvider());
-//
-//    container.registerSingleton<LocalStorageProvider, MobileStorageProvider>(
-//        (c) => MobileStorageProvider());
-//    WsProvider swProvider = MobileWsProvider(
-//      url: apiBaseUrl,
-//      path: '/$apiVersion/socket.io/',
-//    );
-//    container
-//        .registerSingleton<WsProvider, MobileWsProvider>((c) => swProvider);
-//
-//    final FirebaseRemoteConfigProvider remoteConfigProvider =
-//        FirebaseRemoteConfigProvider();
-//    container.registerSingleton<RemoteConfigProvider,
-//        FirebaseRemoteConfigProvider>((c) => remoteConfigProvider);
+    container.registerSingleton<PushProvider, FirebasePushProvider>(
+        (c) => FirebasePushProvider());
+
+    container.registerSingleton<RemoteApiProvider, DioRemoteApiProvider>(
+        (c) => DioRemoteApiProvider(apiBaseUrlConfig));
+
+    container.registerSingleton<ApiProvider, DioApiProvider>(
+        (c) => DioApiProvider(apiBaseUrl));
+
+    container.registerSingleton<SecretProvider, SecureStorageProvider>(
+        (c) => SecureStorageProvider());
+
+    container.registerSingleton<LocalStorageProvider, MobileStorageProvider>(
+        (c) => MobileStorageProvider());
+
+    container.registerSingleton<RemoteConfigProvider, MobileConfigProvider>(
+        (c) => MobileConfigProvider());
   }
 
   void _registerRepositories() {
-//    final apiProvider = container.resolve<ApiProvider>();
-//    final secretProvider = container.resolve<SecretProvider>();
-//    final localStorageProvider = container.resolve<LocalStorageProvider>();
-//    final wsProvider = container.resolve<WsProvider>();
-//    final remoteConfigProvider = container.resolve<RemoteConfigProvider>();
-//    final pushProvider = container.resolve<PushProvider>();
-//    final AccountRepository accountRepository = AccountRepository(
-//      apiProvider,
-//      secretProvider,
-//      localStorageProvider,
-//      wsProvider,
-//      pushProvider,
-//    );
-//
-//    container.registerSingleton((c) => accountRepository);
-//    container.registerSingleton((c) => FeedRepository(apiProvider));
-//    container.registerSingleton((c) => InboxRepository(apiProvider));
-//    container
-//        .registerSingleton((c) => ActivityNotificationRepository(apiProvider));
-//    container.registerSingleton((c) => ProfileRepository(apiProvider));
-//    container.registerSingleton((c) => GroupRepository(
-//          apiProvider,
-//          wsProvider,
-//          accountRepository,
-//        ));
-//    container.registerSingleton((c) => GameRepository(
-//          apiProvider,
-//          wsProvider,
-//          accountRepository,
-//        ));
-//    container.registerSingleton((c) => ScoreRepository(apiProvider));
-//    container.registerSingleton((c) => CommentRepository(apiProvider));
-//    container.registerSingleton(
-//      (c) => PartnerRepository(apiProvider, accountRepository),
-//    );
-//    container.registerSingleton(
-//      (c) => ExploreRepository(
-//            apiProvider,
-//            localStorageProvider,
-//            accountRepository,
-//            defaultRadius: remoteConfigProvider.defaultRadius,
-//          ),
-//    );
-//    container.registerSingleton((c) => PulseRepository(apiProvider));
-//    container.registerSingleton((c) => SettingRepository(apiProvider));
-//    container.registerSingleton(
-//        (c) => ExploreSortOptionsRepository(localStorageProvider));
-//    container.registerSingleton(
-//        (c) => ProfileSportRepository(apiProvider, localStorageProvider));
-//    container.registerSingleton((c) => InvitePlayerRepository(
-//          apiProvider,
-//          localStorageProvider,
-//        ));
-//    container.registerSingleton((c) => RankingRepository(apiProvider));
-//    container.registerSingleton((c) => TooltipRepository(localStorageProvider));
-//    container.registerSingleton((c) => AssessmentRepository(apiProvider));
+    final apiRemoteProvider = container.resolve<RemoteApiProvider>();
+    final apiProvider = container.resolve<ApiProvider>();
+    final secretProvider = container.resolve<SecretProvider>();
+    final localStorageProvider = container.resolve<LocalStorageProvider>();
+    final pushProvider = container.resolve<PushProvider>();
+
+    final AuthenticateRepository authenticateRepo = AuthenticateRepository(
+        apiRemoteProvider,
+        apiProvider,
+        secretProvider,
+        localStorageProvider,
+        pushProvider);
+
+    container.registerSingleton((c) => authenticateRepo);
   }
 }

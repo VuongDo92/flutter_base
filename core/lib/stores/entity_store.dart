@@ -5,7 +5,7 @@ part 'entity_store.g.dart';
 /// Subclass and override [fetchData] function
 class EntityStore<T, K> = _EntityStore<T, K> with _$EntityStore<T, K>;
 
-abstract class _EntityStore<T, K> implements Store {
+abstract class _EntityStore<T, K> with Store {
   K get entityId => null; // ID of the entity
 
   @observable

@@ -1,21 +1,17 @@
 import './env.dart';
 
 class ProductionEnv extends Env {
-  EnvType environmentType = EnvType.DEVELOPMENT;
+  EnvType environmentType = EnvType.PRODUCTION;
   static ProductionEnv value;
 
-  String appName = 'Rovo';
-  String baseUrl = 'https://rovo.co';
-  String host = 'rovo.co';
+  @override
+  String appName = "Flutter-Base";
 
-  String apiBaseUrl = 'https://api.rovo.co';
-  String apiVersion = 'v1.9.0';
+  @override
+  String apiBaseUrl = 'https://ocspstage.globe.com.ph';
 
-  // Database Config
-  int dbVersion = 1;
-  String dbName = 'rovo.db';
-  String amplitudeApiKey = 'fillme';
-  String stripeApiKey = 'fillme';
+  @override
+  String apiBaseUrlConfig = 'https://wwwstage.globe.com.ph/';
 
   ProductionEnv() {
     value = this;

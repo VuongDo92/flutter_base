@@ -6,7 +6,7 @@ part 'pagination_store.g.dart';
 /// Subclass and override [fetchData] function
 class PaginationStore<T> = _PaginationStore<T> with _$PaginationStore<T>;
 
-abstract class _PaginationStore<T> implements Store {
+abstract class _PaginationStore<T> with Store {
   static const DEFAULT_PAGE_SIZE = 20;
 
   @observable
