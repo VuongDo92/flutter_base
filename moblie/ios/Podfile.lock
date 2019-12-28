@@ -117,7 +117,7 @@ PODS:
     - Flutter
   - path_provider (0.0.1):
     - Flutter
-  - permission_handler (2.2.0):
+  - permission_handler (4.0.0):
     - Flutter
   - Protobuf (3.10.0)
   - shared_preferences (0.0.1):
@@ -228,7 +228,7 @@ SPEC CHECKSUMS:
   nanopb: 18003b5e52dab79db540fe93fe9579f399bd1ccd
   package_info: 78cabb3c322943c55d39676f4a5bfc748c01d055
   path_provider: f96fff6166a8867510d2c25fdcc346327cc4b259
-  permission_handler: 0fc6d6641c09e4bfd5541dd39b0f44c7e369aa6b
+  permission_handler: 0fb88b8a3c23e31e5de45b8f1bb8b7de28cf8941
   Protobuf: a4dc852ad69c027ca2166ed287b856697814375b
   shared_preferences: 1feebfa37bb57264736e16865e7ffae7fc99b523
 
