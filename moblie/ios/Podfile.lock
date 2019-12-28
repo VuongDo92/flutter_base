@@ -103,13 +103,8 @@ PODS:
     - GoogleUtilities/Logger
   - image_crop (0.0.1):
     - Flutter
-  - image_downloader (0.0.1):
-    - Flutter
   - image_picker (0.0.1):
     - Flutter
-  - keyboard_visibility (0.5.0):
-    - Flutter
-    - Reachability
   - multi_image_picker (4.5.9):
     - BSImagePicker (~> 2.10.3)
     - Flutter
@@ -125,7 +120,6 @@ PODS:
   - permission_handler (2.2.0):
     - Flutter
   - Protobuf (3.10.0)
-  - Reachability (3.2)
   - shared_preferences (0.0.1):
     - Flutter
 
@@ -140,9 +134,7 @@ DEPENDENCIES:
   - flutter_secure_storage (from `.symlinks/plugins/flutter_secure_storage/ios`)
   - get_version (from `.symlinks/plugins/get_version/ios`)
   - image_crop (from `.symlinks/plugins/image_crop/ios`)
-  - image_downloader (from `.symlinks/plugins/image_downloader/ios`)
   - image_picker (from `.symlinks/plugins/image_picker/ios`)
-  - keyboard_visibility (from `.symlinks/plugins/keyboard_visibility/ios`)
   - multi_image_picker (from `.symlinks/plugins/multi_image_picker/ios`)
   - package_info (from `.symlinks/plugins/package_info/ios`)
   - path_provider (from `.symlinks/plugins/path_provider/ios`)
@@ -169,7 +161,6 @@ SPEC REPOS:
     - GoogleUtilities
     - nanopb
     - Protobuf
-    - Reachability
 
 EXTERNAL SOURCES:
   app_settings:
@@ -192,12 +183,8 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/get_version/ios"
   image_crop:
     :path: ".symlinks/plugins/image_crop/ios"
-  image_downloader:
-    :path: ".symlinks/plugins/image_downloader/ios"
   image_picker:
     :path: ".symlinks/plugins/image_picker/ios"
-  keyboard_visibility:
-    :path: ".symlinks/plugins/keyboard_visibility/ios"
   multi_image_picker:
     :path: ".symlinks/plugins/multi_image_picker/ios"
   package_info:
@@ -217,7 +204,7 @@ SPEC CHECKSUMS:
   BSImageView: a149459433a2687157d034c78e059d30ac7f2544
   device_info: 3ebad48f726348f69abd802f3334a8d1ed795fbd
   Firebase: 458d109512200d1aca2e1b9b6cf7d68a869a4a46
-  firebase_core: 971ffa0fb29e49b80a2ad295eb1ad1cdbd680ec4
+  firebase_core: 15d27cd74b2e40f8c29540707c0486bb561a92e8
   firebase_messaging: db3f19ec4490799e5c660723626740e539c41c04
   FirebaseAnalytics: 45f36d9c429fc91d206283900ab75390cd05ee8a
   FirebaseAnalyticsInterop: d48b6ab67bcf016a05e55b71fc39c61c0cb6b7f3
@@ -236,16 +223,13 @@ SPEC CHECKSUMS:
   GoogleDataTransportCCTSupport: ef79a4728b864946a8aafdbab770d5294faf3b5f
   GoogleUtilities: 547a86735c6f0ee30ad17e94df4fc21f616b71cb
   image_crop: e0a67085d3ebf3cf46ca46d61c53a082507b0bc3
-  image_downloader: e5e747da37f5270b2d549747fcef9d276224d7b1
   image_picker: 16e5fec1fbc87fd3b297c53e4048521eaf17cd06
-  keyboard_visibility: 96a24de806fe6823c3ad956c01ba2ec6d056616f
   multi_image_picker: 68d86c3e3616a64096cb5ef46de9a8195930a3e4
   nanopb: 18003b5e52dab79db540fe93fe9579f399bd1ccd
   package_info: 78cabb3c322943c55d39676f4a5bfc748c01d055
   path_provider: f96fff6166a8867510d2c25fdcc346327cc4b259
   permission_handler: 0fc6d6641c09e4bfd5541dd39b0f44c7e369aa6b
   Protobuf: a4dc852ad69c027ca2166ed287b856697814375b
-  Reachability: 33e18b67625424e47b6cde6d202dce689ad7af96
   shared_preferences: 1feebfa37bb57264736e16865e7ffae7fc99b523
 
 PODFILE CHECKSUM: f979aa9bfcc357b3e962dede90221e8fe094ca64
