@@ -26,19 +26,19 @@ dependencies:
 
   tuple: 1.0.2
   #Dependency Injections
-  kiwi: ^0.1.0
+  kiwi: ^0.2.0
   provider: ^2.0.0+1
   #State managementsy
-  mobx: ^0.3.5
-  flutter_mobx: ^0.3.0+1
+  mobx: ^0.4.0+1
+  flutter_mobx: ^0.3.5
   #routing
   fluro: ^1.4.0
   #UI libraries
   shimmer: any
-  oktoast: ^2.1.6
-  get_version: ^0.0.8
-  device_info: ^0.4.0+2
-  app_settings: ^1.0.6
+  oktoast: ^2.3.0
+  get_version: ^0.2.0+1
+  device_info: ^0.4.1+4
+  app_settings: ^3.0.0+1
   path_drawing: ^0.4.0
   # The following adds the Cupertino Icons font to your appx  lication.
   # Use with the CupertinoIcons class for iOS style icons.
@@ -53,11 +53,11 @@ dependencies:
   #Utils
   path_provider: any
   intl: 0.16.0
-  sprintf: ^4.0.0
+  sprintf: ^4.0.2
   platform: ^2.2.0
   #http + ws
   http: ^0.12.0+1
-  dio: ^2.0.1
+  dio: ^3.0.8
   permission_handler: ^4.0.0
   rxdart: ^0.20.0
   # image util
