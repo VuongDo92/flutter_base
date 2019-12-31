@@ -67,5 +67,8 @@ class ThemeState extends Equatable {
         _devicePixelRatio = devicePixelRatio,
         _defaultBorderSide =
             BorderSide(color: AppColors.silver, width: 1.0 / devicePixelRatio),
-        super([theme]);
+        super();
+
+  @override
+  List<Object> get props => null;
 }
