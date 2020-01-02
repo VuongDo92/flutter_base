@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'dart:ui';
+import 'package:bittrex_app/ui/screens/home_screen.dart';
 import 'package:kiwi/kiwi.dart' as kiwi;
 
 import 'package:bittrex_app/i18n/application.dart';
@@ -22,6 +23,7 @@ import './config/env.dart';
 import './routes/routes.dart';
 import 'i18n/i18n.dart';
 import 'platform_channel.dart';
+import 'routes/app_router.dart';
 import 'ui/components/buttons/buttons.dart';
 import 'ui/theme/theme.dart';
 
@@ -95,41 +97,17 @@ class App extends StatefulWidget {
   State<App> createState() => _AppState();
 }
 
-class _AppState extends State<App> with WidgetsBindingObserver {
-//  WsProvider _ws = kiwi.Container().resolve<WsProvider>();
-
-  Locale locale;
+class _AppState extends State<App> {
 
   @override
   void initState() {
-    locale = widget.locale ?? const Locale('en');
     super.initState();
-    WidgetsBinding.instance.addObserver(this);
-  }
-
-  void initRoutes() {
     Routes.configureRoutes(Routes.router);
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-  }
-
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    debugPrint('new application state ${state.toString()}');
-    switch (state) {
-      case AppLifecycleState.resumed:
-        break;
-      default:
-        break;
-    }
+    AppRouter.init(widget.env.deeplinkScheme);
   }
 
   @override
   void dispose() {
-    WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
 
@@ -143,9 +121,9 @@ class _AppState extends State<App> with WidgetsBindingObserver {
       ],
       child: OKToast(
         child: AppRoot(
-          key: widget._rootKey,
+//          key: widget._rootKey,
           akamaiStore: widget.akamaiStore,
-          locale: locale,
+          locale: widget.locale,
           env: widget.env,
         ),
         radius: 16.0,
@@ -182,10 +160,6 @@ class _AppRootState extends State<AppRoot>
   GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
   Locale _deviceLocale;
 
-  void initRoutes() {
-    Routes.configureRoutes(Routes.router);
-  }
-
   @override
   Widget build(BuildContext context) {
     final themeState = Provider.of<ThemeState>(context);
@@ -195,26 +169,7 @@ class _AppRootState extends State<AppRoot>
       child: MaterialApp(
         theme: themeState.theme,
         navigatorKey: _rootNavigatorKey,
-        home: Builder(builder: (ctx) {
-          _appContext = ctx;
-          return Observer(builder: (_) {
-            return Container(
-              color:
-                  akamaiStore.isBusyWithAkamai ? Colors.white : Colors.blueGrey,
-              child: Center(
-                child: Padding(
-                  padding: EdgeInsets.symmetric(vertical: theme.spacingDefault),
-                  child: PrimaryButton(
-                    size: ButtonSize.normal,
-                    onPressed:
-                        akamaiStore.isBusyWithAkamai ? null : _loginHandler,
-                    child: Text("Login"),
-                  ),
-                ),
-              ),
-            );
-          });
-        }),
+        home: HomeScreen(),
         localizationsDelegates: [
           _i18nDelegate,
           //provides localised strings
@@ -258,7 +213,6 @@ class _AppRootState extends State<AppRoot>
     super.initState();
 
     channel = PlatformChannel(onMethodCall);
-    initRoutes();
 
     kiwi.Container().resolve<PushProvider>().init();
 

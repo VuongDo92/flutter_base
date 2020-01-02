@@ -13,6 +13,12 @@ class DevelopmentEnv extends Env {
   @override
   String apiBaseUrlConfig = 'https://wwwstage.globe.com.ph/';
 
+  @override
+  List<String> domains= ['inrovo.co','rovo.co'];
+
+  @override
+  String deeplinkScheme = 'inrovo';
+
   DevelopmentEnv() {
     value = this;
   }

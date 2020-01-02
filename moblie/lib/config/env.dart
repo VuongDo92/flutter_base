@@ -40,6 +40,12 @@ abstract class Env {
   String defaultProfilePictureKey = 'profiles/pictures/default.png';
   String fbHost = 'https://platform-lookaside.fbsbx.com';
 
+  String host;
+
+  List<String> domains;
+
+  String deeplinkScheme;
+
   Env() {
     WidgetsFlutterBinding.ensureInitialized();
     _init();

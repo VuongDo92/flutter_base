@@ -86,6 +86,8 @@ dependencies:
 #  firebase_messaging:
 #    path: ../../flutterfire/packages/firebase_messaging
   firebase_core: ^0.4.2+1
+  url_launcher: ^5.4.1
+  flutter_custom_tabs: ^0.6.0
 
 dev_dependencies:
   core:

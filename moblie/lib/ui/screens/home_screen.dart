@@ -12,9 +12,14 @@ class HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
-        child: Container(
-          color: Colors.blue,
-          child: Text('Hello mobx^^'),
+        child: Column(
+          children: <Widget>[
+            Container(
+              color: Colors.blue,
+              child: Text('Hello mobx^^'),
+            ),
+            FlatButton(onPressed: () {}, child: Text("goto demo screen"))
+          ],
         ),
       ),
     );
