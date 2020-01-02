@@ -116,6 +116,7 @@ flutter:
   assets:
     - assets/images/
     - assets/images/3x/
+    - assets/images/2x/
     - assets/locale/
 #    - packages/time_machine/data/cultures/cultures.bin
 #    - packages/time_machine/data/tzdb/tzdb.bin

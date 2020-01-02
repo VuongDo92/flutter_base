@@ -121,7 +121,7 @@ class _AppState extends State<App> {
       ],
       child: OKToast(
         child: AppRoot(
-//          key: widget._rootKey,
+          key: widget._rootKey,
           akamaiStore: widget.akamaiStore,
           locale: widget.locale,
           env: widget.env,

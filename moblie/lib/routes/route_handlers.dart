@@ -26,7 +26,6 @@ var demoRouteHandler = Handler(
 
 var demoFunctionHandler = Handler(
     type: HandlerType.function,
-    // ignore: missing_return
     handlerFunc: (BuildContext context, Map<String, List<String>> params) {
       String message = params["message"]?.first;
       showDialog(
