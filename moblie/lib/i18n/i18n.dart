@@ -6,6 +6,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:sprintf/sprintf.dart';
 
+import 'application.dart';
+
 class I18n {
   Locale locale;
   static Map<dynamic, dynamic> _localisedValues;
@@ -18,6 +20,8 @@ class I18n {
   static I18n of(BuildContext context) {
     return Localizations.of<I18n>(context, I18n);
   }
+
+  static const LocalizationsDelegate<I18n> delegate = I18nDelegate();
 
   static Future<I18n> load(Locale locale) async {
     I18n i18n = I18n(locale);
@@ -104,4 +108,28 @@ class I18n {
 
   /// Helpers for sports
   ///
+}
+
+class I18nDelegate extends LocalizationsDelegate<I18n> {
+  final Locale newLocale;
+
+  const I18nDelegate({this.newLocale});
+
+  @override
+  bool isSupported(Locale locale) {
+    return application.supportedLanguagesCodes.contains(locale.languageCode);
+  }
+
+  @override
+  Future<I18n> load(Locale locale) {
+    return I18n.load(newLocale ?? locale);
+  }
+
+  @override
+  bool shouldReload(LocalizationsDelegate<I18n> old) {
+    if (old is I18nDelegate) {
+      return newLocale != old.newLocale;
+    }
+    return true;
+  }
 }

@@ -60,7 +60,7 @@ abstract class Env {
       container.resolve<LocalStorageProvider>().getString('locale'),
     ]);
 
-    String localeString = all.last as String;
+    String localeString = all.last as String ?? 'en';
     AkamaiStore akamaiStore = AkamaiStore(
         authenticateRepository: container.resolve<AuthenticateRepository>());
 

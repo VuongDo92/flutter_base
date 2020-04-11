@@ -1,19 +1,15 @@
 import 'dart:io';
 import 'dart:ui';
-import 'package:bittrex_app/ui/screens/home_screen.dart';
-import 'package:kiwi/kiwi.dart' as kiwi;
 
 import 'package:bittrex_app/i18n/application.dart';
-import 'package:bittrex_app/i18n/i18n_delegate.dart';
-import 'package:bittrex_app/ui/components/buttons/button_size.dart';
+import 'package:bittrex_app/ui/screens/home_screen.dart';
 import 'package:bittrex_app/ui/theme/theme_state.dart';
 import 'package:bittrex_app/ui/utils/exception_utils.dart';
 import 'package:core/repositories/providers/providers.dart';
 import 'package:core/stores/akamai_store.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:flutter_mobx/flutter_mobx.dart';
+import 'package:kiwi/kiwi.dart' as kiwi;
 import 'package:meta/meta.dart';
 import 'package:mobx/mobx.dart';
 import 'package:oktoast/oktoast.dart';
@@ -24,7 +20,6 @@ import './routes/routes.dart';
 import 'i18n/i18n.dart';
 import 'platform_channel.dart';
 import 'routes/app_router.dart';
-import 'ui/components/buttons/buttons.dart';
 import 'ui/theme/theme.dart';
 
 Future<dynamic> myBackgroundMessageHandler(Map<String, dynamic> message) async {
@@ -32,6 +27,7 @@ Future<dynamic> myBackgroundMessageHandler(Map<String, dynamic> message) async {
 
 //  await _showBackgroundNotification(message);
 }
+
 BuildContext _appContext; // Safe context to get navigator and I18n from
 
 typedef OnError = void Function(dynamic error, {dynamic stack});
@@ -98,7 +94,6 @@ class App extends StatefulWidget {
 }
 
 class _AppState extends State<App> {
-
   @override
   void initState() {
     super.initState();
@@ -170,11 +165,11 @@ class _AppRootState extends State<AppRoot>
         theme: themeState.theme,
         navigatorKey: _rootNavigatorKey,
         home: HomeScreen(),
-        localizationsDelegates: [
-          _i18nDelegate,
-          //provides localised strings
-          GlobalMaterialLocalizations.delegate,
-        ],
+//        localizationsDelegates: [
+//          _i18nDelegate,
+//          //provides localised strings
+//          GlobalMaterialLocalizations.delegate,
+//        ],
         supportedLocales: application.supportedLocales(),
         onGenerateRoute: Routes.router.generator,
       ),
