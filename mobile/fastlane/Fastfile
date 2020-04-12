@@ -1,0 +1,124 @@
+# https://gist.github.com/jogboms/a35b5cdf8eb584320832646e7b0480fc
+# TODO: update for Android
+# TODO: use generic email like automation@rovo.co
+#
+# This file contains the fastlane.tools configuration
+# You can find the documentation at https://docs.fastlane.tools
+#
+# For a list of all available actions, check out
+#
+#     https://docs.fastlane.tools/actions
+#
+# For a list of all available plugins, check out
+#
+#     https://docs.fastlane.tools/plugins/available-plugins
+#
+
+# Uncomment the line if you want fastlane to automatically update itself
+update_fastlane
+
+# default_platform(:android)
+
+app_name = "Rovo" #{app_name}
+project_path = "." #{project_path}
+username = "damtuanlong@gmail.com" #{username} // Apple ID
+
+platform :android do
+  desc "Deploy a new version to the Google Play Beta"
+  lane :beta do
+    # Return the number of commits in current git branch
+    #increment_version_code
+    build_number = number_of_commits(all: false)
+    changelog_from_git_commits
+    Dir.chdir ".." do
+      sh("flutter", "packages", "get")
+      sh("flutter", "clean")
+      sh("flutter", "build", "apk", "--flavor", "development", "--build-number=#{build_number}", "-t", "lib/development_main.dart")
+    end
+    crashlytics(
+        api_token: '07db1574c87453ac9dd1f2da65d7cbd57f3c30c2',
+        build_secret: '4e4ba0e15c2d3cd759c0e5631e15c40dedc267e8269d0d832758cd4720de52fb',
+        apk_path: "#{project_path}/build/app/outputs/apk/development/release/app-development-release.apk",
+        emails: 'josh@rovo.co, ritesh@rovo.co'
+      )
+  end
+
+  desc "Deploy a new version to the Google Play Production"
+  lane :release do
+    # Return the number of commits in current git branch
+    build_number = number_of_commits(all: false)
+    changelog_from_git_commits
+    Dir.chdir ".." do
+      sh("flutter", "packages", "get")
+      sh("flutter", "clean")
+      sh("flutter", "build", "apk", "--flavor", "production", "--build-number=#{build_number}", "-t", "lib/production_main.dart")
+    end
+    crashlytics(
+        api_token: '07db1574c87453ac9dd1f2da65d7cbd57f3c30c2',
+        build_secret: '4e4ba0e15c2d3cd759c0e5631e15c40dedc267e8269d0d832758cd4720de52fb',
+        apk_path: "#{project_path}/build/app/outputs/apk/production/release/app-production-release.apk",
+        emails: 'josh@rovo.co, ritesh@rovo.co'
+    )
+  end
+end
+
+platform :ios do
+  desc "Push a new alpha build to TestFlight"
+  lane :alpha do
+    # Return the number of commits in current git branch
+    build_number = number_of_commits(all: false)
+    changelog_from_git_commits
+    Dir.chdir ".." do
+      sh("flutter", "packages", "get")
+      sh("flutter", "clean")
+      sh("flutter", "build", "ios", "--release", "--flavor", "development", "-t", "lib/development_main.dart", "--build-number=#{build_number}")
+    end
+    build_ios_app(workspace: "#{project_path}/ios/Runner.xcworkspace", scheme: "development")
+    upload_to_testflight(
+      skip_waiting_for_build_processing: true,
+      ipa: "#{project_path}/Runner.ipa",
+      username: username)
+  end
+
+  desc "Push a new beta build to TestFlight"
+  lane :beta do
+    changelog = prompt(
+      text: "Changelog: ",
+      multi_line_end_keyword: "END"
+    )
+    # Return the number of commits in current git branch
+    build_number = number_of_commits(all: false)
+    Dir.chdir ".." do
+      sh("flutter", "packages", "get")
+      sh("flutter", "clean")
+      sh("flutter", "build", "ios", "--release", "--flavor", "production", "-t", "lib/production_main.dart", "--build-number=#{build_number}")
+    end
+    build_ios_app(workspace: "#{project_path}/ios/Runner.xcworkspace", scheme: "production")
+    upload_to_testflight(
+      changelog: changelog,
+      skip_waiting_for_build_processing: true,
+      ipa: "#{project_path}/Runner.ipa",
+      username: username)
+  end
+
+  desc "Push a new release build to the App Store"
+  lane :release do
+    # Return the number of commits in current git branch
+    build_number = number_of_commits(all: false)
+    changelog_from_git_commits
+    Dir.chdir ".." do
+      sh("flutter", "packages", "get")
+      sh("flutter", "clean")
+      sh("flutter", "build", "ios", "--release", "--flavor", "production", "-t", "lib/production_main.dart", "--build-number=#{build_number}")
+    end
+    build_ios_app(workspace: "#{project_path}/ios/Runner.xcworkspace", scheme: "production")
+    upload_to_app_store(
+      submit_for_review: true,
+      automatic_release: true,
+      skip_screenshots: true,
+      force: true,
+      skip_waiting_for_build_processing: true,
+      ipa: "#{project_path}/Runner.ipa",
+      username: username)
+  end
+end
